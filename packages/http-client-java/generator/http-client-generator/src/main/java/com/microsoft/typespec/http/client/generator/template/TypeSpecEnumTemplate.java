@@ -39,7 +39,8 @@ public class TypeSpecEnumTemplate extends EnumTemplate {
             imports.add("java.lang.IllegalArgumentException");
             imports.add("java.util.Map");
             imports.add("java.util.concurrent.ConcurrentHashMap");
-            imports.add(getStringEnumImport());
+            imports.add("java.util.ArrayList");
+            imports.add(ClassType.EXPANDABLE_ENUM.getFullName());
             if (!settings.isStreamStyleSerialization()) {
                 imports.add("com.fasterxml.jackson.annotation.JsonCreator");
             }
@@ -63,8 +64,8 @@ public class TypeSpecEnumTemplate extends EnumTemplate {
                         ? "Static value " + value + " for " + enumName + "."
                         : enumValue.getDescription());
                     addGeneratedAnnotation(classBlock);
-                    classBlock.publicStaticFinalVariable(String.format("%1$s %2$s = from%3$s(%4$s)", enumName,
-                        enumValue.getName(), pascalTypeName, elementType.defaultValueExpression(value)));
+                    classBlock.publicStaticFinalVariable(String.format("%1$s %2$s = fromValue(%3$s)", enumName,
+                        enumValue.getName(), elementType.defaultValueExpression(value)));
                 }
 
                 classBlock.variable(pascalTypeName + " value", JavaVisibility.Private, JavaModifier.Final);
@@ -72,7 +73,7 @@ public class TypeSpecEnumTemplate extends EnumTemplate {
                     ctor.line("this.value = value;");
                 });
 
-                // fromString(typeName)
+                // fromValue(typeName)
                 classBlock.javadocComment(comment -> {
                     comment.description("Creates or finds a " + enumName);
                     comment.param("value", "a value to look for");
@@ -84,9 +85,9 @@ public class TypeSpecEnumTemplate extends EnumTemplate {
                     classBlock.annotation("JsonCreator");
                 }
 
-                classBlock.publicStaticMethod(String.format("%1$s from%2$s(%3$s value)", enumName, pascalTypeName, pascalTypeName),
+                classBlock.publicStaticMethod(String.format("%1$s fromValue(%2$s value)", enumName, pascalTypeName),
                     function -> {
-                        function.ifBlock("value == null", ifAction -> ifAction.line("throw new IllegalArgumentException(\"value can't be null\")"));
+                        function.ifBlock("value == null", ifAction -> ifAction.line("throw new IllegalArgumentException(\"value can't be null\");"));
                         function.line(enumName + " member = VALUES.get(value);");
                         function.ifBlock("member != null", ifAction -> {
                             ifAction.line("return member;");
@@ -100,8 +101,8 @@ public class TypeSpecEnumTemplate extends EnumTemplate {
                     comment.methodReturns("Known " + enumName + " values.");
                 });
                 addGeneratedAnnotation(classBlock);
-                classBlock.publicStaticMethod(String.format("Collection<%s> values()", pascalTypeName),
-                    function -> function.methodReturn(String.format("new ArrayList<%1$s>((Collection<%1$s>) VALUES.values())", pascalTypeName)));
+                classBlock.publicStaticMethod(String.format("Collection<%s> values()", enumName),
+                    function -> function.methodReturn("new ArrayList<>(VALUES.values())"));
 
                 // getValue
                 classBlock.javadocComment(comment -> {
@@ -122,12 +123,12 @@ public class TypeSpecEnumTemplate extends EnumTemplate {
                 // equals
                 addGeneratedAnnotation(classBlock);
                 classBlock.annotation("Override");
-                classBlock.method(JavaVisibility.Public, null, "boolean equals(Object obj)", function -> function.methodReturn(String.format("(obj instanceof %1$s) && ((%1$s) obj).getValue().equals(getValue())", pascalTypeName)));
+                classBlock.method(JavaVisibility.Public, null, "boolean equals(Object obj)", function -> function.methodReturn(String.format("(obj instanceof %1$s) && ((%1$s) obj).getValue().equals(getValue())", enumName)));
 
                 // hashcode
                 addGeneratedAnnotation(classBlock);
                 classBlock.annotation("Override");
-                classBlock.method(JavaVisibility.Public, null, "String hashCode()", function -> function.methodReturn("getValue().hashCode()"));
+                classBlock.method(JavaVisibility.Public, null, "int hashCode()", function -> function.methodReturn("getValue().hashCode()"));
             });
         }
     }
