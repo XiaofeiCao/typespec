@@ -5,6 +5,8 @@ package com.azure.resourcemanager.resources;
 
 import com.azure.core.management.Region;
 import com.azure.core.util.Context;
+import com.azure.resourcemanager.operationtemplates.OperationTemplatesManager;
+import com.azure.resourcemanager.operationtemplates.models.LroResourceProperties;
 import com.azure.resourcemanager.resources.fluent.models.SingletonTrackedResourceInner;
 import com.azure.resourcemanager.resources.models.NestedProxyResource;
 import com.azure.resourcemanager.resources.models.NestedProxyResourceProperties;
@@ -39,6 +41,8 @@ public class ArmResourceTest {
     private static final String NOTIFICATION_DETAILS_MESSAGE = "Resource action at top level.";
     private final ResourcesManager manager
         = ResourcesManager.authenticate(ArmUtils.createTestHttpPipeline(), ArmUtils.getAzureProfile());
+
+    private final OperationTemplatesManager operationTemplatesManager = OperationTemplatesManager.authenticate(ArmUtils.createTestHttpPipeline(), ArmUtils.getAzureProfile());
 
     @Test
     public void testTopLevelTrackedResource() {
@@ -198,5 +202,15 @@ public class ArmResourceTest {
 
         resource = manager.singletons().listByResourceGroup(RESOURCE_GROUP_NAME).stream().findFirst().get();
         Assertions.assertEquals(resourceNameDefault, resource.name());
+    }
+
+    @Test
+    public void testLro() {
+        operationTemplatesManager.lroes()
+            .define("lro")
+            .withRegion("eastus")
+            .withExistingResourceGroup("test-rg")
+            .withProperties(new LroResourceProperties().withDescription("valid"))
+            .create();
     }
 }

@@ -1,130 +1,169 @@
+import "@typespec/http";
+import "@typespec/rest";
 import "@azure-tools/typespec-azure-core";
+import "@azure-tools/typespec-azure-resource-manager";
+import "@azure-tools/cadl-ranch-expect";
 
-using TypeSpec.Rest;
 using TypeSpec.Http;
-using TypeSpec.Versioning;
+using TypeSpec.Rest;
 using Azure.Core;
-using Azure.Core.Traits;
+using Azure.ResourceManager;
+using TypeSpec.OpenAPI;
+namespace Azure.ResourceManager.OperationTemplates;
 
-@service({
-  title: "LongRunning",
-})
-@versioned(ApiVersions)
-@route("/long-running")
-namespace Cadl.LongRunning {
-  enum ApiVersions {
-    @useDependency(global.Azure.Core.Versions.v1_0_Preview_2)
-    v2022_06_01_preview: "2022-06-01-preview",
-  }
-
-  // case of LRO having pollingOperation in non-service namespace
-  @pollingOperation(NonService.poll)
-  @post
-  @route("/post")
-  op longRunning(): AcceptedResponse;
-
-  model PollResponse {
-    operationId: string;
-    status: Azure.Core.Foundations.OperationState;
-  }
-
-  // case of HealthInsights
-  @route("/jobs/{id}")
-  op getJob is LroLongRunningPollOperation<JobResult>;
-
-  @pollingOperation(LongRunning.getJob)
-  @route("/jobs")
-  op createJob is LroLongRunningRpcOperation<
-    {
-      @body body: JobData;
-    },
-    JobResult
-  >;
-
-  model JobData {
-    configuration?: string;
-    nullableFloatDict: Record<float64 | null>;
-  }
-
-  model JobResult
-    is LroOperationStatus<{
-      data: string;
-    }>;
-
-  @lroStatus
-  union JobStatus {
-    string,
-    NotStarted: "notStarted",
-    Running: "running",
-    Succeeded: "Succeeded",
-    Failed: "Failed",
-    Canceled: "canceled",
-  }
-
-  model LroOperationStatus<TStatusResult = never, TStatusError = Foundations.Error> {
-    @key("operationId")
-    @visibility("read")
-    id: Azure.Core.uuid;
-
-    @visibility("read")
-    @lroStatus
-    status: JobStatus;
-
-    @visibility("read")
-    createdDateTime?: utcDateTime;
-
-    @visibility("read")
-    expirationDateTime?: utcDateTime;
-
-    @visibility("read")
-    lastUpdateDateTime?: utcDateTime;
-
-    error?: TStatusError;
-    result?: TStatusResult;
-  }
-
-  op LroLongRunningRpcOperation<
-    TParams extends TypeSpec.Reflection.Model,
-    TResponse extends TypeSpec.Reflection.Model,
-    Traits extends {} = {}
-  > is Azure.Core.RpcOperation<
-    TParams & RepeatabilityRequestHeaders,
-    Foundations.AcceptedResponse<LroLongRunningStatusLocation<TResponse> &
-      Foundations.RetryAfterHeader> &
-      RepeatabilityResponseHeaders &
-      LroOperationStatus,
-    Traits
-  >;
-
-  op LroLongRunningPollOperation<TResult extends TypeSpec.Reflection.Model> is Azure.Core.RpcOperation<
-    {
-      @path("id")
-      id: Azure.Core.uuid;
-    },
-    TResult,
-    LroRetryAfterTrait
-  >;
-
-  model LroLongRunningStatusLocation<TStatusResult = never> {
-    @pollingLocation
-    @TypeSpec.Http.header("Operation-Location")
-    operationLocation: LroResourceLocation<LroOperationStatus<TStatusResult>>;
-  }
-
-  scalar LroResourceLocation<TResource extends {}> extends url;
-
-  @trait("LroRetryAfterTrait")
-  model LroRetryAfterTrait {
-    retryAfter: {
-      @traitLocation(TraitLocation.Response)
-      response: Foundations.RetryAfterHeader;
-    };
-  }
+@resource("lroResources")
+model LroResource is TrackedResource<LroResourceProperties> {
+  ...ResourceNameParameter<LroResource>;
 }
 
-@useDependency(Azure.Core.Versions.v1_0_Preview_2, Cadl.LongRunning.ApiVersions.v2022_06_01_preview)
-namespace Cadl.NonService {
-  @route("/poll")
-  @get
-  op poll(): Cadl.LongRunning.PollResponse;
+model LroResourceProperties {
+  @doc("The description of the resource.")
+  description?: string;
+}
+
+@armResourceOperations
+interface Lro {
+  @scenario
+  @scenarioDoc("""
+    Resource PUT operation.
+    final-state-via: location
+    
+    Expected verb: PUT
+    Expected path: /subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/test-rg/providers/Azure.ResourceManager.OperationTemplates/lroResources/lro
+    Expected query parameter: api-version=2023-12-01-preview
+    Expected request body:
+    ```json
+    {
+      "location": "eastus",
+      "properties": {
+        "description": "valid"
+      }
+    }
+    ```
+    
+    Expected status code: 201
+    Expected response header: Location={endpoint}/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/test-rg/operations/create_or_replace
+    
+    Expected response body:
+    ```json
+    {
+      "id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/test-rg/providers/Azure.ResourceManager.OperationTemplates/lroResources/lro",
+      "name": "top",
+      "type": "topLevel",
+      "location": "eastus",
+      "properties": {
+        "description": "valid",
+        "provisioningState": "Succeeded"
+      },
+      "systemData": {
+        "createdBy": "AzureSDK",
+        "createdByType": "User",
+        "createdAt": <any date>,
+        "lastModifiedBy": "AzureSDK",
+        "lastModifiedAt": <any date>,
+        "lastModifiedByType": "User",
+      }
+    }
+    ```
+    
+    Expected verb: GET
+    Expected URL: {endpoint}/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/test-rg/operations/create_or_replace
+    
+    Expected status code: 202
+    Expected response body:
+    ```json
+    {
+      "id": "create_or_replace",
+      "status": "InProgress"
+    }
+    ```
+    
+    Expected verb: GET
+    Expected URL: {endpoint}/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/test-rg/operations/create_or_replace
+    
+    Expected status code: 200
+    Expected response body:
+    ```json
+    {
+      "id": "create_or_replace",
+      "status": "Succeeded"
+    }
+    ```
+    
+    (The last GET call on resource URL is optional)
+    Expected verb: GET
+    Expected URL: {endpoint}/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/test-rg/providers/Azure.ResourceManager.OperationTemplates/lroResources/lro
+    
+    Expected status code: 200
+    Expected response body:
+    ```json
+    {
+      "id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/test-rg/providers/Azure.ResourceManager.OperationTemplates/lroResources/lro",
+      "name": "top",
+      "type": "topLevel",
+      "location": "eastus",
+      "properties": {
+        "description": "valid",
+        "provisioningState": "Succeeded"
+      },
+      "systemData": {
+        "createdBy": "AzureSDK",
+        "createdByType": "User",
+        "createdAt": <any date>,
+        "lastModifiedBy": "AzureSDK",
+        "lastModifiedAt": <any date>,
+        "lastModifiedByType": "User",
+      }
+    }
+    """)
+  createOrReplace is ArmResourceCreateOrReplaceAsync<
+    LroResource,
+    LroHeaders = ArmLroLocationHeader & Azure.Core.Foundations.RetryAfterHeader
+  >;
+
+  #suppress "deprecated" "legacy"
+  #suppress "@azure-tools/typespec-azure-resource-manager/lro-location-header" "legacy"
+  @scenario
+  @scenarioDoc("""
+    Resource DELETE operation.
+    Service returns both Location and Azure-Async-Operation header.
+    final-state-via: azure-async-operation
+    
+    Expected verb: DELETE
+    Expected path: /subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/test-rg/providers/Azure.ResourceManager.OperationTemplates/lroResources/lro
+    Expected query parameter: api-version=2023-12-01-preview
+    Expected response status code: 202
+    Expected response headers: 
+      - Azure-Async-Operation={endpoint}/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/test-rg/operations/delete
+      - Location={endpoint}/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/test-rg/operations/delete
+    Expected response body:
+    ```json
+    {
+      "id": "delete",
+      "status": "InProgress"
+    }
+    ```
+    
+    Expected verb: GET
+    Expected URL: {endpoint}/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/test-rg/operations/delete
+    
+    Expected status code: 202
+    Expected response body:
+    ```json
+    {
+      "id": "delete",
+      "status": "InProgress"
+    }
+    ```
+    
+    Expected verb: GET
+    Expected URL: {endpoint}/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/test-rg/operations/delete
+    
+    Expected status code: 204
+    """)
+  @useFinalStateVia("azure-async-operation")
+  delete is ArmResourceDeleteWithoutOkAsync<
+    LroResource,
+    LroHeaders = Azure.Core.Foundations.RetryAfterHeader & ArmCombinedLroHeaders
+  >;
 }
