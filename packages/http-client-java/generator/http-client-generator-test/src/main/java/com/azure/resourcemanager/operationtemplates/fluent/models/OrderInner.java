@@ -10,7 +10,7 @@ import com.azure.core.management.SystemData;
 import com.azure.json.JsonReader;
 import com.azure.json.JsonToken;
 import com.azure.json.JsonWriter;
-import com.azure.resourcemanager.operationtemplates.models.LroResourceProperties;
+import com.azure.resourcemanager.operationtemplates.models.OrderProperties;
 import java.io.IOException;
 import java.util.Map;
 
@@ -18,11 +18,11 @@ import java.util.Map;
  * Concrete tracked resource types can be created by aliasing this type using a specific property type.
  */
 @Fluent
-public final class LroResourceInner extends Resource {
+public final class OrderInner extends Resource {
     /*
      * The resource-specific properties for this resource.
      */
-    private LroResourceProperties properties;
+    private OrderProperties properties;
 
     /*
      * Azure Resource Manager metadata containing createdBy and modifiedBy information.
@@ -45,9 +45,9 @@ public final class LroResourceInner extends Resource {
     private String id;
 
     /**
-     * Creates an instance of LroResourceInner class.
+     * Creates an instance of OrderInner class.
      */
-    public LroResourceInner() {
+    public OrderInner() {
     }
 
     /**
@@ -55,7 +55,7 @@ public final class LroResourceInner extends Resource {
      * 
      * @return the properties value.
      */
-    public LroResourceProperties properties() {
+    public OrderProperties properties() {
         return this.properties;
     }
 
@@ -63,9 +63,9 @@ public final class LroResourceInner extends Resource {
      * Set the properties property: The resource-specific properties for this resource.
      * 
      * @param properties the properties value to set.
-     * @return the LroResourceInner object itself.
+     * @return the OrderInner object itself.
      */
-    public LroResourceInner withProperties(LroResourceProperties properties) {
+    public OrderInner withProperties(OrderProperties properties) {
         this.properties = properties;
         return this;
     }
@@ -113,7 +113,7 @@ public final class LroResourceInner extends Resource {
      * {@inheritDoc}
      */
     @Override
-    public LroResourceInner withLocation(String location) {
+    public OrderInner withLocation(String location) {
         super.withLocation(location);
         return this;
     }
@@ -122,7 +122,7 @@ public final class LroResourceInner extends Resource {
      * {@inheritDoc}
      */
     @Override
-    public LroResourceInner withTags(Map<String, String> tags) {
+    public OrderInner withTags(Map<String, String> tags) {
         super.withTags(tags);
         return this;
     }
@@ -151,42 +151,42 @@ public final class LroResourceInner extends Resource {
     }
 
     /**
-     * Reads an instance of LroResourceInner from the JsonReader.
+     * Reads an instance of OrderInner from the JsonReader.
      * 
      * @param jsonReader The JsonReader being read.
-     * @return An instance of LroResourceInner if the JsonReader was pointing to an instance of it, or null if it was
-     * pointing to JSON null.
+     * @return An instance of OrderInner if the JsonReader was pointing to an instance of it, or null if it was pointing
+     * to JSON null.
      * @throws IllegalStateException If the deserialized JSON object was missing any required properties.
-     * @throws IOException If an error occurs while reading the LroResourceInner.
+     * @throws IOException If an error occurs while reading the OrderInner.
      */
-    public static LroResourceInner fromJson(JsonReader jsonReader) throws IOException {
+    public static OrderInner fromJson(JsonReader jsonReader) throws IOException {
         return jsonReader.readObject(reader -> {
-            LroResourceInner deserializedLroResourceInner = new LroResourceInner();
+            OrderInner deserializedOrderInner = new OrderInner();
             while (reader.nextToken() != JsonToken.END_OBJECT) {
                 String fieldName = reader.getFieldName();
                 reader.nextToken();
 
                 if ("id".equals(fieldName)) {
-                    deserializedLroResourceInner.id = reader.getString();
+                    deserializedOrderInner.id = reader.getString();
                 } else if ("name".equals(fieldName)) {
-                    deserializedLroResourceInner.name = reader.getString();
+                    deserializedOrderInner.name = reader.getString();
                 } else if ("type".equals(fieldName)) {
-                    deserializedLroResourceInner.type = reader.getString();
+                    deserializedOrderInner.type = reader.getString();
                 } else if ("location".equals(fieldName)) {
-                    deserializedLroResourceInner.withLocation(reader.getString());
+                    deserializedOrderInner.withLocation(reader.getString());
                 } else if ("tags".equals(fieldName)) {
                     Map<String, String> tags = reader.readMap(reader1 -> reader1.getString());
-                    deserializedLroResourceInner.withTags(tags);
+                    deserializedOrderInner.withTags(tags);
                 } else if ("properties".equals(fieldName)) {
-                    deserializedLroResourceInner.properties = LroResourceProperties.fromJson(reader);
+                    deserializedOrderInner.properties = OrderProperties.fromJson(reader);
                 } else if ("systemData".equals(fieldName)) {
-                    deserializedLroResourceInner.systemData = SystemData.fromJson(reader);
+                    deserializedOrderInner.systemData = SystemData.fromJson(reader);
                 } else {
                     reader.skipChildren();
                 }
             }
 
-            return deserializedLroResourceInner;
+            return deserializedOrderInner;
         });
     }
 }

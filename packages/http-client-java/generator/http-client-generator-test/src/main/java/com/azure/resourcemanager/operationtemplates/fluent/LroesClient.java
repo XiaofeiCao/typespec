@@ -9,17 +9,19 @@ import com.azure.core.annotation.ServiceMethod;
 import com.azure.core.management.polling.PollResult;
 import com.azure.core.util.Context;
 import com.azure.core.util.polling.SyncPoller;
-import com.azure.resourcemanager.operationtemplates.fluent.models.LroResourceInner;
+import com.azure.resourcemanager.operationtemplates.fluent.models.ExportResultInner;
+import com.azure.resourcemanager.operationtemplates.fluent.models.OrderInner;
+import com.azure.resourcemanager.operationtemplates.models.ExportRequest;
 
 /**
  * An instance of this class provides access to all the operations defined in LroesClient.
  */
 public interface LroesClient {
     /**
-     * Create a LroResource.
+     * Create a Order.
      * 
      * @param resourceGroupName The name of the resource group. The name is case insensitive.
-     * @param lroResourceName The name of the LroResource.
+     * @param orderName The name of the Order.
      * @param resource Resource create parameters.
      * @throws IllegalArgumentException thrown if parameters fail the validation.
      * @throws com.azure.core.management.exception.ManagementException thrown if the request is rejected by server.
@@ -28,14 +30,14 @@ public interface LroesClient {
      * type using a specific property type.
      */
     @ServiceMethod(returns = ReturnType.LONG_RUNNING_OPERATION)
-    SyncPoller<PollResult<LroResourceInner>, LroResourceInner> beginCreateOrReplace(String resourceGroupName,
-        String lroResourceName, LroResourceInner resource);
+    SyncPoller<PollResult<OrderInner>, OrderInner> beginCreateOrReplace(String resourceGroupName, String orderName,
+        OrderInner resource);
 
     /**
-     * Create a LroResource.
+     * Create a Order.
      * 
      * @param resourceGroupName The name of the resource group. The name is case insensitive.
-     * @param lroResourceName The name of the LroResource.
+     * @param orderName The name of the Order.
      * @param resource Resource create parameters.
      * @param context The context to associate with this operation.
      * @throws IllegalArgumentException thrown if parameters fail the validation.
@@ -45,14 +47,14 @@ public interface LroesClient {
      * type using a specific property type.
      */
     @ServiceMethod(returns = ReturnType.LONG_RUNNING_OPERATION)
-    SyncPoller<PollResult<LroResourceInner>, LroResourceInner> beginCreateOrReplace(String resourceGroupName,
-        String lroResourceName, LroResourceInner resource, Context context);
+    SyncPoller<PollResult<OrderInner>, OrderInner> beginCreateOrReplace(String resourceGroupName, String orderName,
+        OrderInner resource, Context context);
 
     /**
-     * Create a LroResource.
+     * Create a Order.
      * 
      * @param resourceGroupName The name of the resource group. The name is case insensitive.
-     * @param lroResourceName The name of the LroResource.
+     * @param orderName The name of the Order.
      * @param resource Resource create parameters.
      * @throws IllegalArgumentException thrown if parameters fail the validation.
      * @throws com.azure.core.management.exception.ManagementException thrown if the request is rejected by server.
@@ -60,13 +62,13 @@ public interface LroesClient {
      * @return concrete tracked resource types can be created by aliasing this type using a specific property type.
      */
     @ServiceMethod(returns = ReturnType.SINGLE)
-    LroResourceInner createOrReplace(String resourceGroupName, String lroResourceName, LroResourceInner resource);
+    OrderInner createOrReplace(String resourceGroupName, String orderName, OrderInner resource);
 
     /**
-     * Create a LroResource.
+     * Create a Order.
      * 
      * @param resourceGroupName The name of the resource group. The name is case insensitive.
-     * @param lroResourceName The name of the LroResource.
+     * @param orderName The name of the Order.
      * @param resource Resource create parameters.
      * @param context The context to associate with this operation.
      * @throws IllegalArgumentException thrown if parameters fail the validation.
@@ -75,27 +77,29 @@ public interface LroesClient {
      * @return concrete tracked resource types can be created by aliasing this type using a specific property type.
      */
     @ServiceMethod(returns = ReturnType.SINGLE)
-    LroResourceInner createOrReplace(String resourceGroupName, String lroResourceName, LroResourceInner resource,
-        Context context);
+    OrderInner createOrReplace(String resourceGroupName, String orderName, OrderInner resource, Context context);
 
     /**
-     * Delete a LroResource.
+     * A long-running resource action.
      * 
      * @param resourceGroupName The name of the resource group. The name is case insensitive.
-     * @param lroResourceName The name of the LroResource.
+     * @param orderName The name of the Order.
+     * @param body The content of the action request.
      * @throws IllegalArgumentException thrown if parameters fail the validation.
      * @throws com.azure.core.management.exception.ManagementException thrown if the request is rejected by server.
      * @throws RuntimeException all other wrapped checked exceptions if the request fails to be sent.
      * @return the {@link SyncPoller} for polling of long-running operation.
      */
     @ServiceMethod(returns = ReturnType.LONG_RUNNING_OPERATION)
-    SyncPoller<PollResult<Void>, Void> beginDelete(String resourceGroupName, String lroResourceName);
+    SyncPoller<PollResult<ExportResultInner>, ExportResultInner> beginExport(String resourceGroupName, String orderName,
+        ExportRequest body);
 
     /**
-     * Delete a LroResource.
+     * A long-running resource action.
      * 
      * @param resourceGroupName The name of the resource group. The name is case insensitive.
-     * @param lroResourceName The name of the LroResource.
+     * @param orderName The name of the Order.
+     * @param body The content of the action request.
      * @param context The context to associate with this operation.
      * @throws IllegalArgumentException thrown if parameters fail the validation.
      * @throws com.azure.core.management.exception.ManagementException thrown if the request is rejected by server.
@@ -103,30 +107,87 @@ public interface LroesClient {
      * @return the {@link SyncPoller} for polling of long-running operation.
      */
     @ServiceMethod(returns = ReturnType.LONG_RUNNING_OPERATION)
-    SyncPoller<PollResult<Void>, Void> beginDelete(String resourceGroupName, String lroResourceName, Context context);
+    SyncPoller<PollResult<ExportResultInner>, ExportResultInner> beginExport(String resourceGroupName, String orderName,
+        ExportRequest body, Context context);
 
     /**
-     * Delete a LroResource.
+     * A long-running resource action.
      * 
      * @param resourceGroupName The name of the resource group. The name is case insensitive.
-     * @param lroResourceName The name of the LroResource.
+     * @param orderName The name of the Order.
+     * @param body The content of the action request.
+     * @throws IllegalArgumentException thrown if parameters fail the validation.
+     * @throws com.azure.core.management.exception.ManagementException thrown if the request is rejected by server.
+     * @throws RuntimeException all other wrapped checked exceptions if the request fails to be sent.
+     * @return the response.
+     */
+    @ServiceMethod(returns = ReturnType.SINGLE)
+    ExportResultInner export(String resourceGroupName, String orderName, ExportRequest body);
+
+    /**
+     * A long-running resource action.
+     * 
+     * @param resourceGroupName The name of the resource group. The name is case insensitive.
+     * @param orderName The name of the Order.
+     * @param body The content of the action request.
+     * @param context The context to associate with this operation.
+     * @throws IllegalArgumentException thrown if parameters fail the validation.
+     * @throws com.azure.core.management.exception.ManagementException thrown if the request is rejected by server.
+     * @throws RuntimeException all other wrapped checked exceptions if the request fails to be sent.
+     * @return the response.
+     */
+    @ServiceMethod(returns = ReturnType.SINGLE)
+    ExportResultInner export(String resourceGroupName, String orderName, ExportRequest body, Context context);
+
+    /**
+     * Delete a Order.
+     * 
+     * @param resourceGroupName The name of the resource group. The name is case insensitive.
+     * @param orderName The name of the Order.
+     * @throws IllegalArgumentException thrown if parameters fail the validation.
+     * @throws com.azure.core.management.exception.ManagementException thrown if the request is rejected by server.
+     * @throws RuntimeException all other wrapped checked exceptions if the request fails to be sent.
+     * @return the {@link SyncPoller} for polling of long-running operation.
+     */
+    @ServiceMethod(returns = ReturnType.LONG_RUNNING_OPERATION)
+    SyncPoller<PollResult<Void>, Void> beginDelete(String resourceGroupName, String orderName);
+
+    /**
+     * Delete a Order.
+     * 
+     * @param resourceGroupName The name of the resource group. The name is case insensitive.
+     * @param orderName The name of the Order.
+     * @param context The context to associate with this operation.
+     * @throws IllegalArgumentException thrown if parameters fail the validation.
+     * @throws com.azure.core.management.exception.ManagementException thrown if the request is rejected by server.
+     * @throws RuntimeException all other wrapped checked exceptions if the request fails to be sent.
+     * @return the {@link SyncPoller} for polling of long-running operation.
+     */
+    @ServiceMethod(returns = ReturnType.LONG_RUNNING_OPERATION)
+    SyncPoller<PollResult<Void>, Void> beginDelete(String resourceGroupName, String orderName, Context context);
+
+    /**
+     * Delete a Order.
+     * 
+     * @param resourceGroupName The name of the resource group. The name is case insensitive.
+     * @param orderName The name of the Order.
      * @throws IllegalArgumentException thrown if parameters fail the validation.
      * @throws com.azure.core.management.exception.ManagementException thrown if the request is rejected by server.
      * @throws RuntimeException all other wrapped checked exceptions if the request fails to be sent.
      */
     @ServiceMethod(returns = ReturnType.SINGLE)
-    void delete(String resourceGroupName, String lroResourceName);
+    void delete(String resourceGroupName, String orderName);
 
     /**
-     * Delete a LroResource.
+     * Delete a Order.
      * 
      * @param resourceGroupName The name of the resource group. The name is case insensitive.
-     * @param lroResourceName The name of the LroResource.
+     * @param orderName The name of the Order.
      * @param context The context to associate with this operation.
      * @throws IllegalArgumentException thrown if parameters fail the validation.
      * @throws com.azure.core.management.exception.ManagementException thrown if the request is rejected by server.
      * @throws RuntimeException all other wrapped checked exceptions if the request fails to be sent.
      */
     @ServiceMethod(returns = ReturnType.SINGLE)
-    void delete(String resourceGroupName, String lroResourceName, Context context);
+    void delete(String resourceGroupName, String orderName, Context context);
 }

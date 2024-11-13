@@ -6,7 +6,10 @@ package com.azure.resourcemanager.resources;
 import com.azure.core.management.Region;
 import com.azure.core.util.Context;
 import com.azure.resourcemanager.operationtemplates.OperationTemplatesManager;
-import com.azure.resourcemanager.operationtemplates.models.LroResourceProperties;
+import com.azure.resourcemanager.operationtemplates.models.ExportRequest;
+import com.azure.resourcemanager.operationtemplates.models.ExportResult;
+import com.azure.resourcemanager.operationtemplates.models.Order;
+import com.azure.resourcemanager.operationtemplates.models.OrderProperties;
 import com.azure.resourcemanager.resources.fluent.models.SingletonTrackedResourceInner;
 import com.azure.resourcemanager.resources.models.NestedProxyResource;
 import com.azure.resourcemanager.resources.models.NestedProxyResourceProperties;
@@ -42,7 +45,8 @@ public class ArmResourceTest {
     private final ResourcesManager manager
         = ResourcesManager.authenticate(ArmUtils.createTestHttpPipeline(), ArmUtils.getAzureProfile());
 
-    private final OperationTemplatesManager operationTemplatesManager = OperationTemplatesManager.authenticate(ArmUtils.createTestHttpPipeline(), ArmUtils.getAzureProfile());
+    private final OperationTemplatesManager operationTemplatesManager = OperationTemplatesManager
+      .authenticate(ArmUtils.createTestHttpPipeline(), ArmUtils.getAzureProfile());
 
     @Test
     public void testTopLevelTrackedResource() {
@@ -206,11 +210,19 @@ public class ArmResourceTest {
 
     @Test
     public void testLro() {
-        operationTemplatesManager.lroes()
-            .define("lro")
+      Order lroResource = operationTemplatesManager.lroes()
+            .define("order")
             .withRegion("eastus")
             .withExistingResourceGroup("test-rg")
-            .withProperties(new LroResourceProperties().withDescription("valid"))
+            .withProperties(new OrderProperties().withProductId("product1").withAmount(1))
             .create();
+      System.out.println(lroResource.id());
+
+      ExportResult result = operationTemplatesManager.lroes()
+        .export("test-rg", "order1", new ExportRequest().withFormat("csv"));
+      Assertions.assertNotNull(result.content());
+
+      operationTemplatesManager.lroes()
+        .delete("test-rg", "order1", Context.NONE);
     }
 }

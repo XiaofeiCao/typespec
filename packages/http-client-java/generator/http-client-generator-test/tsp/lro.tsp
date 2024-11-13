@@ -10,15 +10,31 @@ using Azure.Core;
 using Azure.ResourceManager;
 using TypeSpec.OpenAPI;
 namespace Azure.ResourceManager.OperationTemplates;
-
-@resource("lroResources")
-model LroResource is TrackedResource<LroResourceProperties> {
-  ...ResourceNameParameter<LroResource>;
+@resource("orders")
+model Order is TrackedResource<OrderProperties> {
+  ...ResourceNameParameter<Order>;
 }
 
-model LroResourceProperties {
-  @doc("The description of the resource.")
-  description?: string;
+model OrderProperties {
+  @doc("The product ID of the order.")
+  productId: string;
+
+  @doc("Amount of the product.")
+  amount: int32;
+
+  @doc("The provisioning state of the product.")
+  @visibility("read")
+  provisioningState?: string;
+}
+
+model ExportRequest {
+  @doc("Format of the exported order.")
+  format: string;
+}
+
+model ExportResult {
+  @doc("Content of the exported order.")
+  content: string;
 }
 
 @armResourceOperations
@@ -26,34 +42,34 @@ interface Lro {
   @scenario
   @scenarioDoc("""
     Resource PUT operation.
-    final-state-via: location
-    
+    Service returns "Azure-AsyncOperation" on initial request.
+    final-state-via: Azure-AsyncOperation
+
     Expected verb: PUT
-    Expected path: /subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/test-rg/providers/Azure.ResourceManager.OperationTemplates/lroResources/lro
+    Expected path: /subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/test-rg/providers/Azure.ResourceManager.OperationTemplates/orders/order1
     Expected query parameter: api-version=2023-12-01-preview
     Expected request body:
     ```json
     {
       "location": "eastus",
       "properties": {
-        "description": "valid"
+        "productId": "product1",
+        "amount": 1
       }
     }
     ```
-    
     Expected status code: 201
-    Expected response header: Location={endpoint}/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/test-rg/operations/create_or_replace
-    
+    Expected response header: Azure-AsyncOperation={endpoint}/subscriptions/00000000-0000-0000-0000-000000000000/locations/eastus/lro_create/aao
     Expected response body:
     ```json
     {
-      "id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/test-rg/providers/Azure.ResourceManager.OperationTemplates/lroResources/lro",
-      "name": "top",
-      "type": "topLevel",
+      "id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/test-rg/providers/Azure.ResourceManager.OperationTemplates/orders/order1",
+      "name": "order1",
+      "type": "Azure.ResourceManager.Resources/orders",
       "location": "eastus",
       "properties": {
         "description": "valid",
-        "provisioningState": "Succeeded"
+        "provisioningState": "InProgress"
       },
       "systemData": {
         "createdBy": "AzureSDK",
@@ -65,45 +81,51 @@ interface Lro {
       }
     }
     ```
-    
+
     Expected verb: GET
-    Expected URL: {endpoint}/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/test-rg/operations/create_or_replace
-    
-    Expected status code: 202
-    Expected response body:
-    ```json
-    {
-      "id": "create_or_replace",
-      "status": "InProgress"
-    }
-    ```
-    
-    Expected verb: GET
-    Expected URL: {endpoint}/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/test-rg/operations/create_or_replace
-    
+    Expected URL: {endpoint}/subscriptions/00000000-0000-0000-0000-000000000000/locations/eastus/lro_create/aao
+
     Expected status code: 200
     Expected response body:
     ```json
     {
-      "id": "create_or_replace",
-      "status": "Succeeded"
+      "id": "/subscriptions/00000000-0000-0000-0000-000000000000/locations/eastus/lro_create/aao",
+      "name": "aao",
+      "startTime": "2024-11-08T01:41:53.5508583+00:00",
+      "status" : "InProgress"
     }
     ```
-    
-    (The last GET call on resource URL is optional)
+
     Expected verb: GET
-    Expected URL: {endpoint}/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/test-rg/providers/Azure.ResourceManager.OperationTemplates/lroResources/lro
-    
+    Expected URL: {endpoint}/subscriptions/00000000-0000-0000-0000-000000000000/locations/eastus/lro_create/aao
+
     Expected status code: 200
     Expected response body:
     ```json
     {
-      "id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/test-rg/providers/Azure.ResourceManager.OperationTemplates/lroResources/lro",
-      "name": "top",
-      "type": "topLevel",
+      "id": "/subscriptions/00000000-0000-0000-0000-000000000000/locations/eastus/lro_create/aao",
+      "name": "aao",
+      "status" : "Succeeded",
+      "startTime": "2024-11-08T01:41:53.5508583+00:00",
+      "endTime": "2024-11-08T01:42:41.5354192+00:00"
+    }
+    ```
+
+    Last get call on resource URL
+    Expected verb: GET
+    Expected URL: {endpoint}/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/test-rg/providers/Azure.ResourceManager.OperationTemplates/storageBuckets/mottos
+
+    Expected status code: 200
+    Expected response body:
+    ```json
+    {
+      "id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/test-rg/providers/Azure.ResourceManager.OperationTemplates/storageBuckets/mottos",
+      "name": "lro",
+      "type": "Azure.ResourceManager.Resources/storageBuckets",
       "location": "eastus",
       "properties": {
-        "description": "valid",
+        "productId": "product1",
+        "amount": 1,
         "provisioningState": "Succeeded"
       },
       "systemData": {
@@ -116,9 +138,83 @@ interface Lro {
       }
     }
     """)
-  createOrReplace is ArmResourceCreateOrReplaceAsync<
-    LroResource,
-    LroHeaders = ArmLroLocationHeader & Azure.Core.Foundations.RetryAfterHeader
+  createOrReplace is ArmResourceCreateOrReplaceAsync<Order>;
+
+  @scenario
+  @scenarioDoc("""
+    Resource POST operation.
+    Service returns both Location and Azure-AsyncOperation header on initial request.
+    final-state-via: location
+
+    Expected verb: POST
+    Expected path: /subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/test-rg/providers/Azure.ResourceManager.OperationTemplates/orders/order1/export
+    Expected query parameter: api-version=2023-12-01-preview
+    Expected request body:
+    ```json
+    {
+      "format": "csv"
+    }
+    ```
+    Expected response status code: 202
+    Expected response headers:
+      - Azure-AsyncOperation={endpoint}/subscriptions/00000000-0000-0000-0000-000000000000/locations/eastus/lro_post/aao
+      - Location={endpoint}/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/test-rg/lro_post/location
+    Expected no response body
+
+    Whether you do polling through AAO, Location or combined, first one will respond with provisioning state "InProgress", second one with "Succeeded".
+
+    AAO first poll.
+    Expected verb: GET
+    Expected URL: {endpoint}/subscriptions/00000000-0000-0000-0000-000000000000/locations/eastus/lro_post/aao
+    Expected status code: 200
+    Expected response body:
+    ```json
+    {
+      "id": "/subscriptions/00000000-0000-0000-0000-000000000000/locations/eastus/lro_post/aao",
+      "name": "aao",
+      "status" : "InProgress",
+      "startTime": "2024-11-08T01:41:53.5508583+00:00"
+    }
+    ```
+
+    AAO second poll.
+    Expected verb: GET
+    Expected URL: {endpoint}/subscriptions/00000000-0000-0000-0000-000000000000/locations/eastus/lro_post/aao
+    Expected status code: 200
+    Expected response body:
+    ```json
+    {
+      "id": "/subscriptions/00000000-0000-0000-0000-000000000000/locations/eastus/lro_post/aao",
+      "name": "aao",
+      "status" : "Succeeded",
+      "startTime": "2024-11-08T01:41:53.5508583+00:00",
+      "endTime": "2024-11-08T01:42:41.5354192+00:00"
+    }
+    ```
+
+    Location first poll.
+    Expected verb: GET
+    Expected URL: {endpoint}/subscriptions/00000000-0000-0000-0000-000000000000/locations/eastus/lro_post/location
+    Expected status code: 202
+    Expected no response body
+
+    Location second poll.
+    Expected verb: GET
+    Expected URL: {endpoint}/subscriptions/00000000-0000-0000-0000-000000000000/locations/eastus/lro_post/location
+    Expected status code: 200
+    Expected response body:
+    ```json
+    {
+      "content": "order1,product1,1"
+    }
+    ```
+    """)
+  @useFinalStateVia("location")
+  export is ArmResourceActionAsync<
+    Order,
+    ExportRequest,
+    ExportResult,
+    LroHeaders = ArmCombinedLroHeaders & Azure.Core.Foundations.RetryAfterHeader
   >;
 
   #suppress "deprecated" "legacy"
@@ -126,44 +222,27 @@ interface Lro {
   @scenario
   @scenarioDoc("""
     Resource DELETE operation.
-    Service returns both Location and Azure-Async-Operation header.
-    final-state-via: azure-async-operation
-    
+    Service returns both Location header on initial request.
+
     Expected verb: DELETE
-    Expected path: /subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/test-rg/providers/Azure.ResourceManager.OperationTemplates/lroResources/lro
+    Expected path: /subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/test-rg/providers/Azure.ResourceManager.OperationTemplates/orders/order1
     Expected query parameter: api-version=2023-12-01-preview
     Expected response status code: 202
-    Expected response headers: 
-      - Azure-Async-Operation={endpoint}/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/test-rg/operations/delete
-      - Location={endpoint}/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/test-rg/operations/delete
-    Expected response body:
-    ```json
-    {
-      "id": "delete",
-      "status": "InProgress"
-    }
-    ```
-    
+    Expected response header: Location={endpoint}/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/test-rg/lro_delete/location
+    Expected no response body
+
+    Location first poll.
     Expected verb: GET
-    Expected URL: {endpoint}/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/test-rg/operations/delete
-    
+    Expected URL: {endpoint}/subscriptions/00000000-0000-0000-0000-000000000000/locations/eastus/lro_delete/location
     Expected status code: 202
-    Expected response body:
-    ```json
-    {
-      "id": "delete",
-      "status": "InProgress"
-    }
-    ```
-    
+    Expected no response body
+
+    Location second poll.
     Expected verb: GET
-    Expected URL: {endpoint}/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/test-rg/operations/delete
-    
+    Expected URL: {endpoint}/subscriptions/00000000-0000-0000-0000-000000000000/locations/eastus/lro_delete/location
     Expected status code: 204
+    Expected no response body
     """)
-  @useFinalStateVia("azure-async-operation")
-  delete is ArmResourceDeleteWithoutOkAsync<
-    LroResource,
-    LroHeaders = Azure.Core.Foundations.RetryAfterHeader & ArmCombinedLroHeaders
-  >;
+  delete is ArmResourceDeleteWithoutOkAsync<Order>;
 }
+

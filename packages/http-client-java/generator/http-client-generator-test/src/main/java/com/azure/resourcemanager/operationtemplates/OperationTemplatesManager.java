@@ -76,7 +76,7 @@ public final class OperationTemplatesManager {
     public static OperationTemplatesManager authenticate(HttpPipeline httpPipeline, AzureProfile profile) {
         Objects.requireNonNull(httpPipeline, "'httpPipeline' cannot be null.");
         Objects.requireNonNull(profile, "'profile' cannot be null.");
-        return new OperationTemplatesManager(httpPipeline, profile, null);
+        return new OperationTemplatesManager(httpPipeline, profile, Duration.ofMillis(1));
     }
 
     /**
@@ -252,7 +252,7 @@ public final class OperationTemplatesManager {
     }
 
     /**
-     * Gets the resource collection API of Lroes. It manages LroResource.
+     * Gets the resource collection API of Lroes. It manages Order.
      * 
      * @return Resource collection API of Lroes.
      */

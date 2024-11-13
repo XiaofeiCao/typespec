@@ -12,6 +12,7 @@ import com.azure.core.annotation.Headers;
 import com.azure.core.annotation.Host;
 import com.azure.core.annotation.HostParam;
 import com.azure.core.annotation.PathParam;
+import com.azure.core.annotation.Post;
 import com.azure.core.annotation.Put;
 import com.azure.core.annotation.QueryParam;
 import com.azure.core.annotation.ReturnType;
@@ -27,7 +28,9 @@ import com.azure.core.util.FluxUtil;
 import com.azure.core.util.polling.PollerFlux;
 import com.azure.core.util.polling.SyncPoller;
 import com.azure.resourcemanager.operationtemplates.fluent.LroesClient;
-import com.azure.resourcemanager.operationtemplates.fluent.models.LroResourceInner;
+import com.azure.resourcemanager.operationtemplates.fluent.models.ExportResultInner;
+import com.azure.resourcemanager.operationtemplates.fluent.models.OrderInner;
+import com.azure.resourcemanager.operationtemplates.models.ExportRequest;
 import java.nio.ByteBuffer;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -63,32 +66,39 @@ public final class LroesClientImpl implements LroesClient {
     @Host("{endpoint}")
     @ServiceInterface(name = "OperationTemplatesCl")
     public interface LroesService {
-        @Put("/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Azure.ResourceManager.OperationTemplates/lroResources/{lroResourceName}")
+        @Put("/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Azure.ResourceManager.OperationTemplates/orders/{orderName}")
         @ExpectedResponses({ 200, 201 })
         @UnexpectedResponseExceptionType(ManagementException.class)
         Mono<Response<Flux<ByteBuffer>>> createOrReplace(@HostParam("endpoint") String endpoint,
             @QueryParam("api-version") String apiVersion, @PathParam("subscriptionId") String subscriptionId,
-            @PathParam("resourceGroupName") String resourceGroupName,
-            @PathParam("lroResourceName") String lroResourceName, @HeaderParam("Content-Type") String contentType,
-            @HeaderParam("Accept") String accept, @BodyParam("application/json") LroResourceInner resource,
-            Context context);
+            @PathParam("resourceGroupName") String resourceGroupName, @PathParam("orderName") String orderName,
+            @HeaderParam("Content-Type") String contentType, @HeaderParam("Accept") String accept,
+            @BodyParam("application/json") OrderInner resource, Context context);
+
+        @Post("/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Azure.ResourceManager.OperationTemplates/orders/{orderName}/export")
+        @ExpectedResponses({ 200, 202 })
+        @UnexpectedResponseExceptionType(ManagementException.class)
+        Mono<Response<Flux<ByteBuffer>>> export(@HostParam("endpoint") String endpoint,
+            @QueryParam("api-version") String apiVersion, @PathParam("subscriptionId") String subscriptionId,
+            @PathParam("resourceGroupName") String resourceGroupName, @PathParam("orderName") String orderName,
+            @HeaderParam("Content-Type") String contentType, @HeaderParam("Accept") String accept,
+            @BodyParam("application/json") ExportRequest body, Context context);
 
         @Headers({ "Content-Type: application/json" })
-        @Delete("/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Azure.ResourceManager.OperationTemplates/lroResources/{lroResourceName}")
+        @Delete("/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Azure.ResourceManager.OperationTemplates/orders/{orderName}")
         @ExpectedResponses({ 202, 204 })
         @UnexpectedResponseExceptionType(ManagementException.class)
         Mono<Response<Flux<ByteBuffer>>> delete(@HostParam("endpoint") String endpoint,
             @QueryParam("api-version") String apiVersion, @PathParam("subscriptionId") String subscriptionId,
-            @PathParam("resourceGroupName") String resourceGroupName,
-            @PathParam("lroResourceName") String lroResourceName, @HeaderParam("Accept") String accept,
-            Context context);
+            @PathParam("resourceGroupName") String resourceGroupName, @PathParam("orderName") String orderName,
+            @HeaderParam("Accept") String accept, Context context);
     }
 
     /**
-     * Create a LroResource.
+     * Create a Order.
      * 
      * @param resourceGroupName The name of the resource group. The name is case insensitive.
-     * @param lroResourceName The name of the LroResource.
+     * @param orderName The name of the Order.
      * @param resource Resource create parameters.
      * @throws IllegalArgumentException thrown if parameters fail the validation.
      * @throws ManagementException thrown if the request is rejected by server.
@@ -98,7 +108,7 @@ public final class LroesClientImpl implements LroesClient {
      */
     @ServiceMethod(returns = ReturnType.SINGLE)
     private Mono<Response<Flux<ByteBuffer>>> createOrReplaceWithResponseAsync(String resourceGroupName,
-        String lroResourceName, LroResourceInner resource) {
+        String orderName, OrderInner resource) {
         if (this.client.getEndpoint() == null) {
             return Mono.error(
                 new IllegalArgumentException("Parameter this.client.getEndpoint() is required and cannot be null."));
@@ -111,9 +121,8 @@ public final class LroesClientImpl implements LroesClient {
             return Mono
                 .error(new IllegalArgumentException("Parameter resourceGroupName is required and cannot be null."));
         }
-        if (lroResourceName == null) {
-            return Mono
-                .error(new IllegalArgumentException("Parameter lroResourceName is required and cannot be null."));
+        if (orderName == null) {
+            return Mono.error(new IllegalArgumentException("Parameter orderName is required and cannot be null."));
         }
         if (resource == null) {
             return Mono.error(new IllegalArgumentException("Parameter resource is required and cannot be null."));
@@ -124,16 +133,15 @@ public final class LroesClientImpl implements LroesClient {
         final String accept = "application/json";
         return FluxUtil
             .withContext(context -> service.createOrReplace(this.client.getEndpoint(), this.client.getApiVersion(),
-                this.client.getSubscriptionId(), resourceGroupName, lroResourceName, contentType, accept, resource,
-                context))
+                this.client.getSubscriptionId(), resourceGroupName, orderName, contentType, accept, resource, context))
             .contextWrite(context -> context.putAll(FluxUtil.toReactorContext(this.client.getContext()).readOnly()));
     }
 
     /**
-     * Create a LroResource.
+     * Create a Order.
      * 
      * @param resourceGroupName The name of the resource group. The name is case insensitive.
-     * @param lroResourceName The name of the LroResource.
+     * @param orderName The name of the Order.
      * @param resource Resource create parameters.
      * @param context The context to associate with this operation.
      * @throws IllegalArgumentException thrown if parameters fail the validation.
@@ -144,7 +152,7 @@ public final class LroesClientImpl implements LroesClient {
      */
     @ServiceMethod(returns = ReturnType.SINGLE)
     private Mono<Response<Flux<ByteBuffer>>> createOrReplaceWithResponseAsync(String resourceGroupName,
-        String lroResourceName, LroResourceInner resource, Context context) {
+        String orderName, OrderInner resource, Context context) {
         if (this.client.getEndpoint() == null) {
             return Mono.error(
                 new IllegalArgumentException("Parameter this.client.getEndpoint() is required and cannot be null."));
@@ -157,9 +165,8 @@ public final class LroesClientImpl implements LroesClient {
             return Mono
                 .error(new IllegalArgumentException("Parameter resourceGroupName is required and cannot be null."));
         }
-        if (lroResourceName == null) {
-            return Mono
-                .error(new IllegalArgumentException("Parameter lroResourceName is required and cannot be null."));
+        if (orderName == null) {
+            return Mono.error(new IllegalArgumentException("Parameter orderName is required and cannot be null."));
         }
         if (resource == null) {
             return Mono.error(new IllegalArgumentException("Parameter resource is required and cannot be null."));
@@ -170,15 +177,14 @@ public final class LroesClientImpl implements LroesClient {
         final String accept = "application/json";
         context = this.client.mergeContext(context);
         return service.createOrReplace(this.client.getEndpoint(), this.client.getApiVersion(),
-            this.client.getSubscriptionId(), resourceGroupName, lroResourceName, contentType, accept, resource,
-            context);
+            this.client.getSubscriptionId(), resourceGroupName, orderName, contentType, accept, resource, context);
     }
 
     /**
-     * Create a LroResource.
+     * Create a Order.
      * 
      * @param resourceGroupName The name of the resource group. The name is case insensitive.
-     * @param lroResourceName The name of the LroResource.
+     * @param orderName The name of the Order.
      * @param resource Resource create parameters.
      * @throws IllegalArgumentException thrown if parameters fail the validation.
      * @throws ManagementException thrown if the request is rejected by server.
@@ -187,19 +193,19 @@ public final class LroesClientImpl implements LroesClient {
      * type using a specific property type.
      */
     @ServiceMethod(returns = ReturnType.LONG_RUNNING_OPERATION)
-    private PollerFlux<PollResult<LroResourceInner>, LroResourceInner>
-        beginCreateOrReplaceAsync(String resourceGroupName, String lroResourceName, LroResourceInner resource) {
+    private PollerFlux<PollResult<OrderInner>, OrderInner> beginCreateOrReplaceAsync(String resourceGroupName,
+        String orderName, OrderInner resource) {
         Mono<Response<Flux<ByteBuffer>>> mono
-            = createOrReplaceWithResponseAsync(resourceGroupName, lroResourceName, resource);
-        return this.client.<LroResourceInner, LroResourceInner>getLroResult(mono, this.client.getHttpPipeline(),
-            LroResourceInner.class, LroResourceInner.class, this.client.getContext());
+            = createOrReplaceWithResponseAsync(resourceGroupName, orderName, resource);
+        return this.client.<OrderInner, OrderInner>getLroResult(mono, this.client.getHttpPipeline(), OrderInner.class,
+            OrderInner.class, this.client.getContext());
     }
 
     /**
-     * Create a LroResource.
+     * Create a Order.
      * 
      * @param resourceGroupName The name of the resource group. The name is case insensitive.
-     * @param lroResourceName The name of the LroResource.
+     * @param orderName The name of the Order.
      * @param resource Resource create parameters.
      * @param context The context to associate with this operation.
      * @throws IllegalArgumentException thrown if parameters fail the validation.
@@ -209,20 +215,20 @@ public final class LroesClientImpl implements LroesClient {
      * type using a specific property type.
      */
     @ServiceMethod(returns = ReturnType.LONG_RUNNING_OPERATION)
-    private PollerFlux<PollResult<LroResourceInner>, LroResourceInner> beginCreateOrReplaceAsync(
-        String resourceGroupName, String lroResourceName, LroResourceInner resource, Context context) {
+    private PollerFlux<PollResult<OrderInner>, OrderInner> beginCreateOrReplaceAsync(String resourceGroupName,
+        String orderName, OrderInner resource, Context context) {
         context = this.client.mergeContext(context);
         Mono<Response<Flux<ByteBuffer>>> mono
-            = createOrReplaceWithResponseAsync(resourceGroupName, lroResourceName, resource, context);
-        return this.client.<LroResourceInner, LroResourceInner>getLroResult(mono, this.client.getHttpPipeline(),
-            LroResourceInner.class, LroResourceInner.class, context);
+            = createOrReplaceWithResponseAsync(resourceGroupName, orderName, resource, context);
+        return this.client.<OrderInner, OrderInner>getLroResult(mono, this.client.getHttpPipeline(), OrderInner.class,
+            OrderInner.class, context);
     }
 
     /**
-     * Create a LroResource.
+     * Create a Order.
      * 
      * @param resourceGroupName The name of the resource group. The name is case insensitive.
-     * @param lroResourceName The name of the LroResource.
+     * @param orderName The name of the Order.
      * @param resource Resource create parameters.
      * @throws IllegalArgumentException thrown if parameters fail the validation.
      * @throws ManagementException thrown if the request is rejected by server.
@@ -231,16 +237,16 @@ public final class LroesClientImpl implements LroesClient {
      * type using a specific property type.
      */
     @ServiceMethod(returns = ReturnType.LONG_RUNNING_OPERATION)
-    public SyncPoller<PollResult<LroResourceInner>, LroResourceInner> beginCreateOrReplace(String resourceGroupName,
-        String lroResourceName, LroResourceInner resource) {
-        return this.beginCreateOrReplaceAsync(resourceGroupName, lroResourceName, resource).getSyncPoller();
+    public SyncPoller<PollResult<OrderInner>, OrderInner> beginCreateOrReplace(String resourceGroupName,
+        String orderName, OrderInner resource) {
+        return this.beginCreateOrReplaceAsync(resourceGroupName, orderName, resource).getSyncPoller();
     }
 
     /**
-     * Create a LroResource.
+     * Create a Order.
      * 
      * @param resourceGroupName The name of the resource group. The name is case insensitive.
-     * @param lroResourceName The name of the LroResource.
+     * @param orderName The name of the Order.
      * @param resource Resource create parameters.
      * @param context The context to associate with this operation.
      * @throws IllegalArgumentException thrown if parameters fail the validation.
@@ -250,16 +256,16 @@ public final class LroesClientImpl implements LroesClient {
      * type using a specific property type.
      */
     @ServiceMethod(returns = ReturnType.LONG_RUNNING_OPERATION)
-    public SyncPoller<PollResult<LroResourceInner>, LroResourceInner> beginCreateOrReplace(String resourceGroupName,
-        String lroResourceName, LroResourceInner resource, Context context) {
-        return this.beginCreateOrReplaceAsync(resourceGroupName, lroResourceName, resource, context).getSyncPoller();
+    public SyncPoller<PollResult<OrderInner>, OrderInner> beginCreateOrReplace(String resourceGroupName,
+        String orderName, OrderInner resource, Context context) {
+        return this.beginCreateOrReplaceAsync(resourceGroupName, orderName, resource, context).getSyncPoller();
     }
 
     /**
-     * Create a LroResource.
+     * Create a Order.
      * 
      * @param resourceGroupName The name of the resource group. The name is case insensitive.
-     * @param lroResourceName The name of the LroResource.
+     * @param orderName The name of the Order.
      * @param resource Resource create parameters.
      * @throws IllegalArgumentException thrown if parameters fail the validation.
      * @throws ManagementException thrown if the request is rejected by server.
@@ -268,17 +274,16 @@ public final class LroesClientImpl implements LroesClient {
      * successful completion of {@link Mono}.
      */
     @ServiceMethod(returns = ReturnType.SINGLE)
-    private Mono<LroResourceInner> createOrReplaceAsync(String resourceGroupName, String lroResourceName,
-        LroResourceInner resource) {
-        return beginCreateOrReplaceAsync(resourceGroupName, lroResourceName, resource).last()
+    private Mono<OrderInner> createOrReplaceAsync(String resourceGroupName, String orderName, OrderInner resource) {
+        return beginCreateOrReplaceAsync(resourceGroupName, orderName, resource).last()
             .flatMap(this.client::getLroFinalResultOrError);
     }
 
     /**
-     * Create a LroResource.
+     * Create a Order.
      * 
      * @param resourceGroupName The name of the resource group. The name is case insensitive.
-     * @param lroResourceName The name of the LroResource.
+     * @param orderName The name of the Order.
      * @param resource Resource create parameters.
      * @param context The context to associate with this operation.
      * @throws IllegalArgumentException thrown if parameters fail the validation.
@@ -288,59 +293,60 @@ public final class LroesClientImpl implements LroesClient {
      * successful completion of {@link Mono}.
      */
     @ServiceMethod(returns = ReturnType.SINGLE)
-    private Mono<LroResourceInner> createOrReplaceAsync(String resourceGroupName, String lroResourceName,
-        LroResourceInner resource, Context context) {
-        return beginCreateOrReplaceAsync(resourceGroupName, lroResourceName, resource, context).last()
-            .flatMap(this.client::getLroFinalResultOrError);
-    }
-
-    /**
-     * Create a LroResource.
-     * 
-     * @param resourceGroupName The name of the resource group. The name is case insensitive.
-     * @param lroResourceName The name of the LroResource.
-     * @param resource Resource create parameters.
-     * @throws IllegalArgumentException thrown if parameters fail the validation.
-     * @throws ManagementException thrown if the request is rejected by server.
-     * @throws RuntimeException all other wrapped checked exceptions if the request fails to be sent.
-     * @return concrete tracked resource types can be created by aliasing this type using a specific property type.
-     */
-    @ServiceMethod(returns = ReturnType.SINGLE)
-    public LroResourceInner createOrReplace(String resourceGroupName, String lroResourceName,
-        LroResourceInner resource) {
-        return createOrReplaceAsync(resourceGroupName, lroResourceName, resource).block();
-    }
-
-    /**
-     * Create a LroResource.
-     * 
-     * @param resourceGroupName The name of the resource group. The name is case insensitive.
-     * @param lroResourceName The name of the LroResource.
-     * @param resource Resource create parameters.
-     * @param context The context to associate with this operation.
-     * @throws IllegalArgumentException thrown if parameters fail the validation.
-     * @throws ManagementException thrown if the request is rejected by server.
-     * @throws RuntimeException all other wrapped checked exceptions if the request fails to be sent.
-     * @return concrete tracked resource types can be created by aliasing this type using a specific property type.
-     */
-    @ServiceMethod(returns = ReturnType.SINGLE)
-    public LroResourceInner createOrReplace(String resourceGroupName, String lroResourceName, LroResourceInner resource,
+    private Mono<OrderInner> createOrReplaceAsync(String resourceGroupName, String orderName, OrderInner resource,
         Context context) {
-        return createOrReplaceAsync(resourceGroupName, lroResourceName, resource, context).block();
+        return beginCreateOrReplaceAsync(resourceGroupName, orderName, resource, context).last()
+            .flatMap(this.client::getLroFinalResultOrError);
     }
 
     /**
-     * Delete a LroResource.
+     * Create a Order.
      * 
      * @param resourceGroupName The name of the resource group. The name is case insensitive.
-     * @param lroResourceName The name of the LroResource.
+     * @param orderName The name of the Order.
+     * @param resource Resource create parameters.
      * @throws IllegalArgumentException thrown if parameters fail the validation.
      * @throws ManagementException thrown if the request is rejected by server.
      * @throws RuntimeException all other wrapped checked exceptions if the request fails to be sent.
-     * @return the {@link Response} on successful completion of {@link Mono}.
+     * @return concrete tracked resource types can be created by aliasing this type using a specific property type.
      */
     @ServiceMethod(returns = ReturnType.SINGLE)
-    private Mono<Response<Flux<ByteBuffer>>> deleteWithResponseAsync(String resourceGroupName, String lroResourceName) {
+    public OrderInner createOrReplace(String resourceGroupName, String orderName, OrderInner resource) {
+        return createOrReplaceAsync(resourceGroupName, orderName, resource).block();
+    }
+
+    /**
+     * Create a Order.
+     * 
+     * @param resourceGroupName The name of the resource group. The name is case insensitive.
+     * @param orderName The name of the Order.
+     * @param resource Resource create parameters.
+     * @param context The context to associate with this operation.
+     * @throws IllegalArgumentException thrown if parameters fail the validation.
+     * @throws ManagementException thrown if the request is rejected by server.
+     * @throws RuntimeException all other wrapped checked exceptions if the request fails to be sent.
+     * @return concrete tracked resource types can be created by aliasing this type using a specific property type.
+     */
+    @ServiceMethod(returns = ReturnType.SINGLE)
+    public OrderInner createOrReplace(String resourceGroupName, String orderName, OrderInner resource,
+        Context context) {
+        return createOrReplaceAsync(resourceGroupName, orderName, resource, context).block();
+    }
+
+    /**
+     * A long-running resource action.
+     * 
+     * @param resourceGroupName The name of the resource group. The name is case insensitive.
+     * @param orderName The name of the Order.
+     * @param body The content of the action request.
+     * @throws IllegalArgumentException thrown if parameters fail the validation.
+     * @throws ManagementException thrown if the request is rejected by server.
+     * @throws RuntimeException all other wrapped checked exceptions if the request fails to be sent.
+     * @return the response body along with {@link Response} on successful completion of {@link Mono}.
+     */
+    @ServiceMethod(returns = ReturnType.SINGLE)
+    private Mono<Response<Flux<ByteBuffer>>> exportWithResponseAsync(String resourceGroupName, String orderName,
+        ExportRequest body) {
         if (this.client.getEndpoint() == null) {
             return Mono.error(
                 new IllegalArgumentException("Parameter this.client.getEndpoint() is required and cannot be null."));
@@ -353,31 +359,37 @@ public final class LroesClientImpl implements LroesClient {
             return Mono
                 .error(new IllegalArgumentException("Parameter resourceGroupName is required and cannot be null."));
         }
-        if (lroResourceName == null) {
-            return Mono
-                .error(new IllegalArgumentException("Parameter lroResourceName is required and cannot be null."));
+        if (orderName == null) {
+            return Mono.error(new IllegalArgumentException("Parameter orderName is required and cannot be null."));
         }
+        if (body == null) {
+            return Mono.error(new IllegalArgumentException("Parameter body is required and cannot be null."));
+        } else {
+            body.validate();
+        }
+        final String contentType = "application/json";
         final String accept = "application/json";
         return FluxUtil
-            .withContext(context -> service.delete(this.client.getEndpoint(), this.client.getApiVersion(),
-                this.client.getSubscriptionId(), resourceGroupName, lroResourceName, accept, context))
+            .withContext(context -> service.export(this.client.getEndpoint(), this.client.getApiVersion(),
+                this.client.getSubscriptionId(), resourceGroupName, orderName, contentType, accept, body, context))
             .contextWrite(context -> context.putAll(FluxUtil.toReactorContext(this.client.getContext()).readOnly()));
     }
 
     /**
-     * Delete a LroResource.
+     * A long-running resource action.
      * 
      * @param resourceGroupName The name of the resource group. The name is case insensitive.
-     * @param lroResourceName The name of the LroResource.
+     * @param orderName The name of the Order.
+     * @param body The content of the action request.
      * @param context The context to associate with this operation.
      * @throws IllegalArgumentException thrown if parameters fail the validation.
      * @throws ManagementException thrown if the request is rejected by server.
      * @throws RuntimeException all other wrapped checked exceptions if the request fails to be sent.
-     * @return the {@link Response} on successful completion of {@link Mono}.
+     * @return the response body along with {@link Response} on successful completion of {@link Mono}.
      */
     @ServiceMethod(returns = ReturnType.SINGLE)
-    private Mono<Response<Flux<ByteBuffer>>> deleteWithResponseAsync(String resourceGroupName, String lroResourceName,
-        Context context) {
+    private Mono<Response<Flux<ByteBuffer>>> exportWithResponseAsync(String resourceGroupName, String orderName,
+        ExportRequest body, Context context) {
         if (this.client.getEndpoint() == null) {
             return Mono.error(
                 new IllegalArgumentException("Parameter this.client.getEndpoint() is required and cannot be null."));
@@ -390,38 +402,256 @@ public final class LroesClientImpl implements LroesClient {
             return Mono
                 .error(new IllegalArgumentException("Parameter resourceGroupName is required and cannot be null."));
         }
-        if (lroResourceName == null) {
-            return Mono
-                .error(new IllegalArgumentException("Parameter lroResourceName is required and cannot be null."));
+        if (orderName == null) {
+            return Mono.error(new IllegalArgumentException("Parameter orderName is required and cannot be null."));
         }
+        if (body == null) {
+            return Mono.error(new IllegalArgumentException("Parameter body is required and cannot be null."));
+        } else {
+            body.validate();
+        }
+        final String contentType = "application/json";
         final String accept = "application/json";
         context = this.client.mergeContext(context);
-        return service.delete(this.client.getEndpoint(), this.client.getApiVersion(), this.client.getSubscriptionId(),
-            resourceGroupName, lroResourceName, accept, context);
+        return service.export(this.client.getEndpoint(), this.client.getApiVersion(), this.client.getSubscriptionId(),
+            resourceGroupName, orderName, contentType, accept, body, context);
     }
 
     /**
-     * Delete a LroResource.
+     * A long-running resource action.
      * 
      * @param resourceGroupName The name of the resource group. The name is case insensitive.
-     * @param lroResourceName The name of the LroResource.
+     * @param orderName The name of the Order.
+     * @param body The content of the action request.
      * @throws IllegalArgumentException thrown if parameters fail the validation.
      * @throws ManagementException thrown if the request is rejected by server.
      * @throws RuntimeException all other wrapped checked exceptions if the request fails to be sent.
      * @return the {@link PollerFlux} for polling of long-running operation.
      */
     @ServiceMethod(returns = ReturnType.LONG_RUNNING_OPERATION)
-    private PollerFlux<PollResult<Void>, Void> beginDeleteAsync(String resourceGroupName, String lroResourceName) {
-        Mono<Response<Flux<ByteBuffer>>> mono = deleteWithResponseAsync(resourceGroupName, lroResourceName);
+    private PollerFlux<PollResult<ExportResultInner>, ExportResultInner> beginExportAsync(String resourceGroupName,
+        String orderName, ExportRequest body) {
+        Mono<Response<Flux<ByteBuffer>>> mono = exportWithResponseAsync(resourceGroupName, orderName, body);
+        return this.client.<ExportResultInner, ExportResultInner>getLroResult(mono, this.client.getHttpPipeline(),
+            ExportResultInner.class, ExportResultInner.class, this.client.getContext());
+    }
+
+    /**
+     * A long-running resource action.
+     * 
+     * @param resourceGroupName The name of the resource group. The name is case insensitive.
+     * @param orderName The name of the Order.
+     * @param body The content of the action request.
+     * @param context The context to associate with this operation.
+     * @throws IllegalArgumentException thrown if parameters fail the validation.
+     * @throws ManagementException thrown if the request is rejected by server.
+     * @throws RuntimeException all other wrapped checked exceptions if the request fails to be sent.
+     * @return the {@link PollerFlux} for polling of long-running operation.
+     */
+    @ServiceMethod(returns = ReturnType.LONG_RUNNING_OPERATION)
+    private PollerFlux<PollResult<ExportResultInner>, ExportResultInner> beginExportAsync(String resourceGroupName,
+        String orderName, ExportRequest body, Context context) {
+        context = this.client.mergeContext(context);
+        Mono<Response<Flux<ByteBuffer>>> mono = exportWithResponseAsync(resourceGroupName, orderName, body, context);
+        return this.client.<ExportResultInner, ExportResultInner>getLroResult(mono, this.client.getHttpPipeline(),
+            ExportResultInner.class, ExportResultInner.class, context);
+    }
+
+    /**
+     * A long-running resource action.
+     * 
+     * @param resourceGroupName The name of the resource group. The name is case insensitive.
+     * @param orderName The name of the Order.
+     * @param body The content of the action request.
+     * @throws IllegalArgumentException thrown if parameters fail the validation.
+     * @throws ManagementException thrown if the request is rejected by server.
+     * @throws RuntimeException all other wrapped checked exceptions if the request fails to be sent.
+     * @return the {@link SyncPoller} for polling of long-running operation.
+     */
+    @ServiceMethod(returns = ReturnType.LONG_RUNNING_OPERATION)
+    public SyncPoller<PollResult<ExportResultInner>, ExportResultInner> beginExport(String resourceGroupName,
+        String orderName, ExportRequest body) {
+        return this.beginExportAsync(resourceGroupName, orderName, body).getSyncPoller();
+    }
+
+    /**
+     * A long-running resource action.
+     * 
+     * @param resourceGroupName The name of the resource group. The name is case insensitive.
+     * @param orderName The name of the Order.
+     * @param body The content of the action request.
+     * @param context The context to associate with this operation.
+     * @throws IllegalArgumentException thrown if parameters fail the validation.
+     * @throws ManagementException thrown if the request is rejected by server.
+     * @throws RuntimeException all other wrapped checked exceptions if the request fails to be sent.
+     * @return the {@link SyncPoller} for polling of long-running operation.
+     */
+    @ServiceMethod(returns = ReturnType.LONG_RUNNING_OPERATION)
+    public SyncPoller<PollResult<ExportResultInner>, ExportResultInner> beginExport(String resourceGroupName,
+        String orderName, ExportRequest body, Context context) {
+        return this.beginExportAsync(resourceGroupName, orderName, body, context).getSyncPoller();
+    }
+
+    /**
+     * A long-running resource action.
+     * 
+     * @param resourceGroupName The name of the resource group. The name is case insensitive.
+     * @param orderName The name of the Order.
+     * @param body The content of the action request.
+     * @throws IllegalArgumentException thrown if parameters fail the validation.
+     * @throws ManagementException thrown if the request is rejected by server.
+     * @throws RuntimeException all other wrapped checked exceptions if the request fails to be sent.
+     * @return the response body on successful completion of {@link Mono}.
+     */
+    @ServiceMethod(returns = ReturnType.SINGLE)
+    private Mono<ExportResultInner> exportAsync(String resourceGroupName, String orderName, ExportRequest body) {
+        return beginExportAsync(resourceGroupName, orderName, body).last()
+            .flatMap(this.client::getLroFinalResultOrError);
+    }
+
+    /**
+     * A long-running resource action.
+     * 
+     * @param resourceGroupName The name of the resource group. The name is case insensitive.
+     * @param orderName The name of the Order.
+     * @param body The content of the action request.
+     * @param context The context to associate with this operation.
+     * @throws IllegalArgumentException thrown if parameters fail the validation.
+     * @throws ManagementException thrown if the request is rejected by server.
+     * @throws RuntimeException all other wrapped checked exceptions if the request fails to be sent.
+     * @return the response body on successful completion of {@link Mono}.
+     */
+    @ServiceMethod(returns = ReturnType.SINGLE)
+    private Mono<ExportResultInner> exportAsync(String resourceGroupName, String orderName, ExportRequest body,
+        Context context) {
+        return beginExportAsync(resourceGroupName, orderName, body, context).last()
+            .flatMap(this.client::getLroFinalResultOrError);
+    }
+
+    /**
+     * A long-running resource action.
+     * 
+     * @param resourceGroupName The name of the resource group. The name is case insensitive.
+     * @param orderName The name of the Order.
+     * @param body The content of the action request.
+     * @throws IllegalArgumentException thrown if parameters fail the validation.
+     * @throws ManagementException thrown if the request is rejected by server.
+     * @throws RuntimeException all other wrapped checked exceptions if the request fails to be sent.
+     * @return the response.
+     */
+    @ServiceMethod(returns = ReturnType.SINGLE)
+    public ExportResultInner export(String resourceGroupName, String orderName, ExportRequest body) {
+        return exportAsync(resourceGroupName, orderName, body).block();
+    }
+
+    /**
+     * A long-running resource action.
+     * 
+     * @param resourceGroupName The name of the resource group. The name is case insensitive.
+     * @param orderName The name of the Order.
+     * @param body The content of the action request.
+     * @param context The context to associate with this operation.
+     * @throws IllegalArgumentException thrown if parameters fail the validation.
+     * @throws ManagementException thrown if the request is rejected by server.
+     * @throws RuntimeException all other wrapped checked exceptions if the request fails to be sent.
+     * @return the response.
+     */
+    @ServiceMethod(returns = ReturnType.SINGLE)
+    public ExportResultInner export(String resourceGroupName, String orderName, ExportRequest body, Context context) {
+        return exportAsync(resourceGroupName, orderName, body, context).block();
+    }
+
+    /**
+     * Delete a Order.
+     * 
+     * @param resourceGroupName The name of the resource group. The name is case insensitive.
+     * @param orderName The name of the Order.
+     * @throws IllegalArgumentException thrown if parameters fail the validation.
+     * @throws ManagementException thrown if the request is rejected by server.
+     * @throws RuntimeException all other wrapped checked exceptions if the request fails to be sent.
+     * @return the {@link Response} on successful completion of {@link Mono}.
+     */
+    @ServiceMethod(returns = ReturnType.SINGLE)
+    private Mono<Response<Flux<ByteBuffer>>> deleteWithResponseAsync(String resourceGroupName, String orderName) {
+        if (this.client.getEndpoint() == null) {
+            return Mono.error(
+                new IllegalArgumentException("Parameter this.client.getEndpoint() is required and cannot be null."));
+        }
+        if (this.client.getSubscriptionId() == null) {
+            return Mono.error(new IllegalArgumentException(
+                "Parameter this.client.getSubscriptionId() is required and cannot be null."));
+        }
+        if (resourceGroupName == null) {
+            return Mono
+                .error(new IllegalArgumentException("Parameter resourceGroupName is required and cannot be null."));
+        }
+        if (orderName == null) {
+            return Mono.error(new IllegalArgumentException("Parameter orderName is required and cannot be null."));
+        }
+        final String accept = "application/json";
+        return FluxUtil
+            .withContext(context -> service.delete(this.client.getEndpoint(), this.client.getApiVersion(),
+                this.client.getSubscriptionId(), resourceGroupName, orderName, accept, context))
+            .contextWrite(context -> context.putAll(FluxUtil.toReactorContext(this.client.getContext()).readOnly()));
+    }
+
+    /**
+     * Delete a Order.
+     * 
+     * @param resourceGroupName The name of the resource group. The name is case insensitive.
+     * @param orderName The name of the Order.
+     * @param context The context to associate with this operation.
+     * @throws IllegalArgumentException thrown if parameters fail the validation.
+     * @throws ManagementException thrown if the request is rejected by server.
+     * @throws RuntimeException all other wrapped checked exceptions if the request fails to be sent.
+     * @return the {@link Response} on successful completion of {@link Mono}.
+     */
+    @ServiceMethod(returns = ReturnType.SINGLE)
+    private Mono<Response<Flux<ByteBuffer>>> deleteWithResponseAsync(String resourceGroupName, String orderName,
+        Context context) {
+        if (this.client.getEndpoint() == null) {
+            return Mono.error(
+                new IllegalArgumentException("Parameter this.client.getEndpoint() is required and cannot be null."));
+        }
+        if (this.client.getSubscriptionId() == null) {
+            return Mono.error(new IllegalArgumentException(
+                "Parameter this.client.getSubscriptionId() is required and cannot be null."));
+        }
+        if (resourceGroupName == null) {
+            return Mono
+                .error(new IllegalArgumentException("Parameter resourceGroupName is required and cannot be null."));
+        }
+        if (orderName == null) {
+            return Mono.error(new IllegalArgumentException("Parameter orderName is required and cannot be null."));
+        }
+        final String accept = "application/json";
+        context = this.client.mergeContext(context);
+        return service.delete(this.client.getEndpoint(), this.client.getApiVersion(), this.client.getSubscriptionId(),
+            resourceGroupName, orderName, accept, context);
+    }
+
+    /**
+     * Delete a Order.
+     * 
+     * @param resourceGroupName The name of the resource group. The name is case insensitive.
+     * @param orderName The name of the Order.
+     * @throws IllegalArgumentException thrown if parameters fail the validation.
+     * @throws ManagementException thrown if the request is rejected by server.
+     * @throws RuntimeException all other wrapped checked exceptions if the request fails to be sent.
+     * @return the {@link PollerFlux} for polling of long-running operation.
+     */
+    @ServiceMethod(returns = ReturnType.LONG_RUNNING_OPERATION)
+    private PollerFlux<PollResult<Void>, Void> beginDeleteAsync(String resourceGroupName, String orderName) {
+        Mono<Response<Flux<ByteBuffer>>> mono = deleteWithResponseAsync(resourceGroupName, orderName);
         return this.client.<Void, Void>getLroResult(mono, this.client.getHttpPipeline(), Void.class, Void.class,
             this.client.getContext());
     }
 
     /**
-     * Delete a LroResource.
+     * Delete a Order.
      * 
      * @param resourceGroupName The name of the resource group. The name is case insensitive.
-     * @param lroResourceName The name of the LroResource.
+     * @param orderName The name of the Order.
      * @param context The context to associate with this operation.
      * @throws IllegalArgumentException thrown if parameters fail the validation.
      * @throws ManagementException thrown if the request is rejected by server.
@@ -429,34 +659,34 @@ public final class LroesClientImpl implements LroesClient {
      * @return the {@link PollerFlux} for polling of long-running operation.
      */
     @ServiceMethod(returns = ReturnType.LONG_RUNNING_OPERATION)
-    private PollerFlux<PollResult<Void>, Void> beginDeleteAsync(String resourceGroupName, String lroResourceName,
+    private PollerFlux<PollResult<Void>, Void> beginDeleteAsync(String resourceGroupName, String orderName,
         Context context) {
         context = this.client.mergeContext(context);
-        Mono<Response<Flux<ByteBuffer>>> mono = deleteWithResponseAsync(resourceGroupName, lroResourceName, context);
+        Mono<Response<Flux<ByteBuffer>>> mono = deleteWithResponseAsync(resourceGroupName, orderName, context);
         return this.client.<Void, Void>getLroResult(mono, this.client.getHttpPipeline(), Void.class, Void.class,
             context);
     }
 
     /**
-     * Delete a LroResource.
+     * Delete a Order.
      * 
      * @param resourceGroupName The name of the resource group. The name is case insensitive.
-     * @param lroResourceName The name of the LroResource.
+     * @param orderName The name of the Order.
      * @throws IllegalArgumentException thrown if parameters fail the validation.
      * @throws ManagementException thrown if the request is rejected by server.
      * @throws RuntimeException all other wrapped checked exceptions if the request fails to be sent.
      * @return the {@link SyncPoller} for polling of long-running operation.
      */
     @ServiceMethod(returns = ReturnType.LONG_RUNNING_OPERATION)
-    public SyncPoller<PollResult<Void>, Void> beginDelete(String resourceGroupName, String lroResourceName) {
-        return this.beginDeleteAsync(resourceGroupName, lroResourceName).getSyncPoller();
+    public SyncPoller<PollResult<Void>, Void> beginDelete(String resourceGroupName, String orderName) {
+        return this.beginDeleteAsync(resourceGroupName, orderName).getSyncPoller();
     }
 
     /**
-     * Delete a LroResource.
+     * Delete a Order.
      * 
      * @param resourceGroupName The name of the resource group. The name is case insensitive.
-     * @param lroResourceName The name of the LroResource.
+     * @param orderName The name of the Order.
      * @param context The context to associate with this operation.
      * @throws IllegalArgumentException thrown if parameters fail the validation.
      * @throws ManagementException thrown if the request is rejected by server.
@@ -464,32 +694,30 @@ public final class LroesClientImpl implements LroesClient {
      * @return the {@link SyncPoller} for polling of long-running operation.
      */
     @ServiceMethod(returns = ReturnType.LONG_RUNNING_OPERATION)
-    public SyncPoller<PollResult<Void>, Void> beginDelete(String resourceGroupName, String lroResourceName,
-        Context context) {
-        return this.beginDeleteAsync(resourceGroupName, lroResourceName, context).getSyncPoller();
+    public SyncPoller<PollResult<Void>, Void> beginDelete(String resourceGroupName, String orderName, Context context) {
+        return this.beginDeleteAsync(resourceGroupName, orderName, context).getSyncPoller();
     }
 
     /**
-     * Delete a LroResource.
+     * Delete a Order.
      * 
      * @param resourceGroupName The name of the resource group. The name is case insensitive.
-     * @param lroResourceName The name of the LroResource.
+     * @param orderName The name of the Order.
      * @throws IllegalArgumentException thrown if parameters fail the validation.
      * @throws ManagementException thrown if the request is rejected by server.
      * @throws RuntimeException all other wrapped checked exceptions if the request fails to be sent.
      * @return A {@link Mono} that completes when a successful response is received.
      */
     @ServiceMethod(returns = ReturnType.SINGLE)
-    private Mono<Void> deleteAsync(String resourceGroupName, String lroResourceName) {
-        return beginDeleteAsync(resourceGroupName, lroResourceName).last()
-            .flatMap(this.client::getLroFinalResultOrError);
+    private Mono<Void> deleteAsync(String resourceGroupName, String orderName) {
+        return beginDeleteAsync(resourceGroupName, orderName).last().flatMap(this.client::getLroFinalResultOrError);
     }
 
     /**
-     * Delete a LroResource.
+     * Delete a Order.
      * 
      * @param resourceGroupName The name of the resource group. The name is case insensitive.
-     * @param lroResourceName The name of the LroResource.
+     * @param orderName The name of the Order.
      * @param context The context to associate with this operation.
      * @throws IllegalArgumentException thrown if parameters fail the validation.
      * @throws ManagementException thrown if the request is rejected by server.
@@ -497,37 +725,37 @@ public final class LroesClientImpl implements LroesClient {
      * @return A {@link Mono} that completes when a successful response is received.
      */
     @ServiceMethod(returns = ReturnType.SINGLE)
-    private Mono<Void> deleteAsync(String resourceGroupName, String lroResourceName, Context context) {
-        return beginDeleteAsync(resourceGroupName, lroResourceName, context).last()
+    private Mono<Void> deleteAsync(String resourceGroupName, String orderName, Context context) {
+        return beginDeleteAsync(resourceGroupName, orderName, context).last()
             .flatMap(this.client::getLroFinalResultOrError);
     }
 
     /**
-     * Delete a LroResource.
+     * Delete a Order.
      * 
      * @param resourceGroupName The name of the resource group. The name is case insensitive.
-     * @param lroResourceName The name of the LroResource.
+     * @param orderName The name of the Order.
      * @throws IllegalArgumentException thrown if parameters fail the validation.
      * @throws ManagementException thrown if the request is rejected by server.
      * @throws RuntimeException all other wrapped checked exceptions if the request fails to be sent.
      */
     @ServiceMethod(returns = ReturnType.SINGLE)
-    public void delete(String resourceGroupName, String lroResourceName) {
-        deleteAsync(resourceGroupName, lroResourceName).block();
+    public void delete(String resourceGroupName, String orderName) {
+        deleteAsync(resourceGroupName, orderName).block();
     }
 
     /**
-     * Delete a LroResource.
+     * Delete a Order.
      * 
      * @param resourceGroupName The name of the resource group. The name is case insensitive.
-     * @param lroResourceName The name of the LroResource.
+     * @param orderName The name of the Order.
      * @param context The context to associate with this operation.
      * @throws IllegalArgumentException thrown if parameters fail the validation.
      * @throws ManagementException thrown if the request is rejected by server.
      * @throws RuntimeException all other wrapped checked exceptions if the request fails to be sent.
      */
     @ServiceMethod(returns = ReturnType.SINGLE)
-    public void delete(String resourceGroupName, String lroResourceName, Context context) {
-        deleteAsync(resourceGroupName, lroResourceName, context).block();
+    public void delete(String resourceGroupName, String orderName, Context context) {
+        deleteAsync(resourceGroupName, orderName, context).block();
     }
 }

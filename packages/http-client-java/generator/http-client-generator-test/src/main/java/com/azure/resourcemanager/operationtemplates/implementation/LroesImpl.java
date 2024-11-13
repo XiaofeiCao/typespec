@@ -7,6 +7,9 @@ package com.azure.resourcemanager.operationtemplates.implementation;
 import com.azure.core.util.Context;
 import com.azure.core.util.logging.ClientLogger;
 import com.azure.resourcemanager.operationtemplates.fluent.LroesClient;
+import com.azure.resourcemanager.operationtemplates.fluent.models.ExportResultInner;
+import com.azure.resourcemanager.operationtemplates.models.ExportRequest;
+import com.azure.resourcemanager.operationtemplates.models.ExportResult;
 import com.azure.resourcemanager.operationtemplates.models.Lroes;
 
 public final class LroesImpl implements Lroes {
@@ -22,12 +25,30 @@ public final class LroesImpl implements Lroes {
         this.serviceManager = serviceManager;
     }
 
-    public void deleteByResourceGroup(String resourceGroupName, String lroResourceName) {
-        this.serviceClient().delete(resourceGroupName, lroResourceName);
+    public ExportResult export(String resourceGroupName, String orderName, ExportRequest body) {
+        ExportResultInner inner = this.serviceClient().export(resourceGroupName, orderName, body);
+        if (inner != null) {
+            return new ExportResultImpl(inner, this.manager());
+        } else {
+            return null;
+        }
     }
 
-    public void delete(String resourceGroupName, String lroResourceName, Context context) {
-        this.serviceClient().delete(resourceGroupName, lroResourceName, context);
+    public ExportResult export(String resourceGroupName, String orderName, ExportRequest body, Context context) {
+        ExportResultInner inner = this.serviceClient().export(resourceGroupName, orderName, body, context);
+        if (inner != null) {
+            return new ExportResultImpl(inner, this.manager());
+        } else {
+            return null;
+        }
+    }
+
+    public void deleteByResourceGroup(String resourceGroupName, String orderName) {
+        this.serviceClient().delete(resourceGroupName, orderName);
+    }
+
+    public void delete(String resourceGroupName, String orderName, Context context) {
+        this.serviceClient().delete(resourceGroupName, orderName, context);
     }
 
     public void deleteById(String id) {
@@ -36,12 +57,12 @@ public final class LroesImpl implements Lroes {
             throw LOGGER.logExceptionAsError(new IllegalArgumentException(
                 String.format("The resource ID '%s' is not valid. Missing path segment 'resourceGroups'.", id)));
         }
-        String lroResourceName = ResourceManagerUtils.getValueFromIdByName(id, "lroResources");
-        if (lroResourceName == null) {
+        String orderName = ResourceManagerUtils.getValueFromIdByName(id, "orders");
+        if (orderName == null) {
             throw LOGGER.logExceptionAsError(new IllegalArgumentException(
-                String.format("The resource ID '%s' is not valid. Missing path segment 'lroResources'.", id)));
+                String.format("The resource ID '%s' is not valid. Missing path segment 'orders'.", id)));
         }
-        this.delete(resourceGroupName, lroResourceName, Context.NONE);
+        this.delete(resourceGroupName, orderName, Context.NONE);
     }
 
     public void deleteByIdWithResponse(String id, Context context) {
@@ -50,12 +71,12 @@ public final class LroesImpl implements Lroes {
             throw LOGGER.logExceptionAsError(new IllegalArgumentException(
                 String.format("The resource ID '%s' is not valid. Missing path segment 'resourceGroups'.", id)));
         }
-        String lroResourceName = ResourceManagerUtils.getValueFromIdByName(id, "lroResources");
-        if (lroResourceName == null) {
+        String orderName = ResourceManagerUtils.getValueFromIdByName(id, "orders");
+        if (orderName == null) {
             throw LOGGER.logExceptionAsError(new IllegalArgumentException(
-                String.format("The resource ID '%s' is not valid. Missing path segment 'lroResources'.", id)));
+                String.format("The resource ID '%s' is not valid. Missing path segment 'orders'.", id)));
         }
-        this.delete(resourceGroupName, lroResourceName, context);
+        this.delete(resourceGroupName, orderName, context);
     }
 
     private LroesClient serviceClient() {
@@ -66,7 +87,7 @@ public final class LroesImpl implements Lroes {
         return this.serviceManager;
     }
 
-    public LroResourceImpl define(String name) {
-        return new LroResourceImpl(name, this.manager());
+    public OrderImpl define(String name) {
+        return new OrderImpl(name, this.manager());
     }
 }

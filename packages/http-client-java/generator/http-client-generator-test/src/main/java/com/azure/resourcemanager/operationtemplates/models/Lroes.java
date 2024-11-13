@@ -11,30 +11,57 @@ import com.azure.core.util.Context;
  */
 public interface Lroes {
     /**
-     * Delete a LroResource.
+     * A long-running resource action.
      * 
      * @param resourceGroupName The name of the resource group. The name is case insensitive.
-     * @param lroResourceName The name of the LroResource.
+     * @param orderName The name of the Order.
+     * @param body The content of the action request.
+     * @throws IllegalArgumentException thrown if parameters fail the validation.
+     * @throws com.azure.core.management.exception.ManagementException thrown if the request is rejected by server.
+     * @throws RuntimeException all other wrapped checked exceptions if the request fails to be sent.
+     * @return the response.
+     */
+    ExportResult export(String resourceGroupName, String orderName, ExportRequest body);
+
+    /**
+     * A long-running resource action.
+     * 
+     * @param resourceGroupName The name of the resource group. The name is case insensitive.
+     * @param orderName The name of the Order.
+     * @param body The content of the action request.
+     * @param context The context to associate with this operation.
+     * @throws IllegalArgumentException thrown if parameters fail the validation.
+     * @throws com.azure.core.management.exception.ManagementException thrown if the request is rejected by server.
+     * @throws RuntimeException all other wrapped checked exceptions if the request fails to be sent.
+     * @return the response.
+     */
+    ExportResult export(String resourceGroupName, String orderName, ExportRequest body, Context context);
+
+    /**
+     * Delete a Order.
+     * 
+     * @param resourceGroupName The name of the resource group. The name is case insensitive.
+     * @param orderName The name of the Order.
      * @throws IllegalArgumentException thrown if parameters fail the validation.
      * @throws com.azure.core.management.exception.ManagementException thrown if the request is rejected by server.
      * @throws RuntimeException all other wrapped checked exceptions if the request fails to be sent.
      */
-    void deleteByResourceGroup(String resourceGroupName, String lroResourceName);
+    void deleteByResourceGroup(String resourceGroupName, String orderName);
 
     /**
-     * Delete a LroResource.
+     * Delete a Order.
      * 
      * @param resourceGroupName The name of the resource group. The name is case insensitive.
-     * @param lroResourceName The name of the LroResource.
+     * @param orderName The name of the Order.
      * @param context The context to associate with this operation.
      * @throws IllegalArgumentException thrown if parameters fail the validation.
      * @throws com.azure.core.management.exception.ManagementException thrown if the request is rejected by server.
      * @throws RuntimeException all other wrapped checked exceptions if the request fails to be sent.
      */
-    void delete(String resourceGroupName, String lroResourceName, Context context);
+    void delete(String resourceGroupName, String orderName, Context context);
 
     /**
-     * Delete a LroResource.
+     * Delete a Order.
      * 
      * @param id the resource ID.
      * @throws IllegalArgumentException thrown if parameters fail the validation.
@@ -44,7 +71,7 @@ public interface Lroes {
     void deleteById(String id);
 
     /**
-     * Delete a LroResource.
+     * Delete a Order.
      * 
      * @param id the resource ID.
      * @param context The context to associate with this operation.
@@ -55,10 +82,10 @@ public interface Lroes {
     void deleteByIdWithResponse(String id, Context context);
 
     /**
-     * Begins definition for a new LroResource resource.
+     * Begins definition for a new Order resource.
      * 
      * @param name resource name.
-     * @return the first stage of the new LroResource definition.
+     * @return the first stage of the new Order definition.
      */
-    LroResource.DefinitionStages.Blank define(String name);
+    Order.DefinitionStages.Blank define(String name);
 }

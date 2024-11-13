@@ -7,13 +7,13 @@ package com.azure.resourcemanager.operationtemplates.models;
 import com.azure.core.management.Region;
 import com.azure.core.management.SystemData;
 import com.azure.core.util.Context;
-import com.azure.resourcemanager.operationtemplates.fluent.models.LroResourceInner;
+import com.azure.resourcemanager.operationtemplates.fluent.models.OrderInner;
 import java.util.Map;
 
 /**
- * An immutable client-side representation of LroResource.
+ * An immutable client-side representation of Order.
  */
-public interface LroResource {
+public interface Order {
     /**
      * Gets the id property: Fully qualified resource Id for the resource.
      * 
@@ -54,7 +54,7 @@ public interface LroResource {
      * 
      * @return the properties value.
      */
-    LroResourceProperties properties();
+    OrderProperties properties();
 
     /**
      * Gets the systemData property: Azure Resource Manager metadata containing createdBy and modifiedBy information.
@@ -78,31 +78,31 @@ public interface LroResource {
     String regionName();
 
     /**
-     * Gets the inner com.azure.resourcemanager.operationtemplates.fluent.models.LroResourceInner object.
+     * Gets the inner com.azure.resourcemanager.operationtemplates.fluent.models.OrderInner object.
      * 
      * @return the inner object.
      */
-    LroResourceInner innerModel();
+    OrderInner innerModel();
 
     /**
-     * The entirety of the LroResource definition.
+     * The entirety of the Order definition.
      */
     interface Definition extends DefinitionStages.Blank, DefinitionStages.WithLocation,
         DefinitionStages.WithResourceGroup, DefinitionStages.WithCreate {
     }
 
     /**
-     * The LroResource definition stages.
+     * The Order definition stages.
      */
     interface DefinitionStages {
         /**
-         * The first stage of the LroResource definition.
+         * The first stage of the Order definition.
          */
         interface Blank extends WithLocation {
         }
 
         /**
-         * The stage of the LroResource definition allowing to specify location.
+         * The stage of the Order definition allowing to specify location.
          */
         interface WithLocation {
             /**
@@ -123,7 +123,7 @@ public interface LroResource {
         }
 
         /**
-         * The stage of the LroResource definition allowing to specify parent resource.
+         * The stage of the Order definition allowing to specify parent resource.
          */
         interface WithResourceGroup {
             /**
@@ -136,8 +136,8 @@ public interface LroResource {
         }
 
         /**
-         * The stage of the LroResource definition which contains all the minimum required properties for the resource
-         * to be created, but also allows for any other optional properties to be specified.
+         * The stage of the Order definition which contains all the minimum required properties for the resource to be
+         * created, but also allows for any other optional properties to be specified.
          */
         interface WithCreate extends WithTags, WithProperties {
             /**
@@ -145,7 +145,7 @@ public interface LroResource {
              * 
              * @return the created resource.
              */
-            LroResource create();
+            Order create();
 
             /**
              * Executes the create request.
@@ -153,11 +153,11 @@ public interface LroResource {
              * @param context The context to associate with this operation.
              * @return the created resource.
              */
-            LroResource create(Context context);
+            Order create(Context context);
         }
 
         /**
-         * The stage of the LroResource definition allowing to specify tags.
+         * The stage of the Order definition allowing to specify tags.
          */
         interface WithTags {
             /**
@@ -170,7 +170,7 @@ public interface LroResource {
         }
 
         /**
-         * The stage of the LroResource definition allowing to specify properties.
+         * The stage of the Order definition allowing to specify properties.
          */
         interface WithProperties {
             /**
@@ -179,7 +179,30 @@ public interface LroResource {
              * @param properties The resource-specific properties for this resource.
              * @return the next definition stage.
              */
-            WithCreate withProperties(LroResourceProperties properties);
+            WithCreate withProperties(OrderProperties properties);
         }
     }
+
+    /**
+     * A long-running resource action.
+     * 
+     * @param body The content of the action request.
+     * @throws IllegalArgumentException thrown if parameters fail the validation.
+     * @throws com.azure.core.management.exception.ManagementException thrown if the request is rejected by server.
+     * @throws RuntimeException all other wrapped checked exceptions if the request fails to be sent.
+     * @return the response.
+     */
+    ExportResult export(ExportRequest body);
+
+    /**
+     * A long-running resource action.
+     * 
+     * @param body The content of the action request.
+     * @param context The context to associate with this operation.
+     * @throws IllegalArgumentException thrown if parameters fail the validation.
+     * @throws com.azure.core.management.exception.ManagementException thrown if the request is rejected by server.
+     * @throws RuntimeException all other wrapped checked exceptions if the request fails to be sent.
+     * @return the response.
+     */
+    ExportResult export(ExportRequest body, Context context);
 }

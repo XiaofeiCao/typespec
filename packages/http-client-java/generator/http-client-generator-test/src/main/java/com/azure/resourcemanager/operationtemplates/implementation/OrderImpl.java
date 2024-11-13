@@ -7,18 +7,20 @@ package com.azure.resourcemanager.operationtemplates.implementation;
 import com.azure.core.management.Region;
 import com.azure.core.management.SystemData;
 import com.azure.core.util.Context;
-import com.azure.resourcemanager.operationtemplates.fluent.models.LroResourceInner;
-import com.azure.resourcemanager.operationtemplates.models.LroResource;
-import com.azure.resourcemanager.operationtemplates.models.LroResourceProperties;
+import com.azure.resourcemanager.operationtemplates.fluent.models.OrderInner;
+import com.azure.resourcemanager.operationtemplates.models.ExportRequest;
+import com.azure.resourcemanager.operationtemplates.models.ExportResult;
+import com.azure.resourcemanager.operationtemplates.models.Order;
+import com.azure.resourcemanager.operationtemplates.models.OrderProperties;
 import java.util.Collections;
 import java.util.Map;
 
-public final class LroResourceImpl implements LroResource, LroResource.Definition {
-    private LroResourceInner innerObject;
+public final class OrderImpl implements Order, Order.Definition {
+    private OrderInner innerObject;
 
     private final com.azure.resourcemanager.operationtemplates.OperationTemplatesManager serviceManager;
 
-    LroResourceImpl(LroResourceInner innerObject,
+    OrderImpl(OrderInner innerObject,
         com.azure.resourcemanager.operationtemplates.OperationTemplatesManager serviceManager) {
         this.innerObject = innerObject;
         this.serviceManager = serviceManager;
@@ -49,7 +51,7 @@ public final class LroResourceImpl implements LroResource, LroResource.Definitio
         }
     }
 
-    public LroResourceProperties properties() {
+    public OrderProperties properties() {
         return this.innerModel().properties();
     }
 
@@ -65,7 +67,7 @@ public final class LroResourceImpl implements LroResource, LroResource.Definitio
         return this.location();
     }
 
-    public LroResourceInner innerModel() {
+    public OrderInner innerModel() {
         return this.innerObject;
     }
 
@@ -75,50 +77,57 @@ public final class LroResourceImpl implements LroResource, LroResource.Definitio
 
     private String resourceGroupName;
 
-    private String lroResourceName;
+    private String orderName;
 
-    public LroResourceImpl withExistingResourceGroup(String resourceGroupName) {
+    public OrderImpl withExistingResourceGroup(String resourceGroupName) {
         this.resourceGroupName = resourceGroupName;
         return this;
     }
 
-    public LroResource create() {
+    public Order create() {
         this.innerObject = serviceManager.serviceClient()
             .getLroes()
-            .createOrReplace(resourceGroupName, lroResourceName, this.innerModel(), Context.NONE);
+            .createOrReplace(resourceGroupName, orderName, this.innerModel(), Context.NONE);
         return this;
     }
 
-    public LroResource create(Context context) {
+    public Order create(Context context) {
         this.innerObject = serviceManager.serviceClient()
             .getLroes()
-            .createOrReplace(resourceGroupName, lroResourceName, this.innerModel(), context);
+            .createOrReplace(resourceGroupName, orderName, this.innerModel(), context);
         return this;
     }
 
-    LroResourceImpl(String name,
-        com.azure.resourcemanager.operationtemplates.OperationTemplatesManager serviceManager) {
-        this.innerObject = new LroResourceInner();
+    OrderImpl(String name, com.azure.resourcemanager.operationtemplates.OperationTemplatesManager serviceManager) {
+        this.innerObject = new OrderInner();
         this.serviceManager = serviceManager;
-        this.lroResourceName = name;
+        this.orderName = name;
     }
 
-    public LroResourceImpl withRegion(Region location) {
+    public ExportResult export(ExportRequest body) {
+        return serviceManager.lroes().export(resourceGroupName, orderName, body);
+    }
+
+    public ExportResult export(ExportRequest body, Context context) {
+        return serviceManager.lroes().export(resourceGroupName, orderName, body, context);
+    }
+
+    public OrderImpl withRegion(Region location) {
         this.innerModel().withLocation(location.toString());
         return this;
     }
 
-    public LroResourceImpl withRegion(String location) {
+    public OrderImpl withRegion(String location) {
         this.innerModel().withLocation(location);
         return this;
     }
 
-    public LroResourceImpl withTags(Map<String, String> tags) {
+    public OrderImpl withTags(Map<String, String> tags) {
         this.innerModel().withTags(tags);
         return this;
     }
 
-    public LroResourceImpl withProperties(LroResourceProperties properties) {
+    public OrderImpl withProperties(OrderProperties properties) {
         this.innerModel().withProperties(properties);
         return this;
     }
