@@ -6,6 +6,11 @@ package tsptest.enumservice.models;
 
 import com.azure.core.annotation.Generated;
 import com.azure.core.util.ExpandableEnum;
+import com.azure.json.JsonReader;
+import com.azure.json.JsonSerializable;
+import com.azure.json.JsonWriter;
+
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
@@ -16,7 +21,7 @@ import java.util.function.Function;
 /**
  * Defines values for OlympicRecordModel.
  */
-public final class OlympicRecordModel implements ExpandableEnum<Double> {
+public final class OlympicRecordModel implements ExpandableEnum<Double>, JsonSerializable<OlympicRecordModel> {
     private static final Map<Double, OlympicRecordModel> VALUES = new ConcurrentHashMap<>();
 
     private static final Function<Double, OlympicRecordModel> NEW_INSTANCE = OlympicRecordModel::new;
@@ -92,4 +97,13 @@ public final class OlympicRecordModel implements ExpandableEnum<Double> {
     public int hashCode() {
         return Objects.hashCode(this.value);
     }
+
+  @Override
+  public JsonWriter toJson(JsonWriter jsonWriter) throws IOException {
+    return jsonWriter.writeNumber(getValue());
+  }
+
+  public static OlympicRecordModel fromJson(JsonReader jsonReader) throws IOException{
+    return OlympicRecordModel.fromValue(jsonReader.getDouble());
+  }
 }

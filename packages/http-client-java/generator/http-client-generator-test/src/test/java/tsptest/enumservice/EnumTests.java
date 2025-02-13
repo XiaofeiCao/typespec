@@ -3,12 +3,19 @@
 
 package tsptest.enumservice;
 
+import com.azure.core.http.HttpClient;
 import com.azure.core.http.HttpHeaders;
 import com.azure.core.http.HttpMethod;
+import com.azure.core.http.HttpPipelineBuilder;
 import com.azure.core.http.HttpRequest;
+import com.azure.core.http.HttpResponse;
 import com.azure.core.http.rest.RequestOptions;
+import com.azure.core.http.rest.Response;
 import com.azure.core.http.rest.SimpleResponse;
+import com.azure.core.test.http.MockHttpResponse;
 import com.azure.core.util.BinaryData;
+
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -22,8 +29,12 @@ import org.mockito.Mockito;
 import reactor.core.publisher.Mono;
 import tsptest.enumservice.implementation.EnumServiceClientImpl;
 import tsptest.enumservice.models.ColorModel;
+import tsptest.enumservice.models.OlympicRecordModel;
 import tsptest.enumservice.models.Priority;
 import tsptest.enumservice.models.PriorityModel;
+import type.enums.extensible.ExtensibleClient;
+import type.enums.extensible.ExtensibleClientBuilder;
+import type.enums.extensible.models.DaysOfWeekExtensibleEnum;
 
 public class EnumTests {
 
@@ -137,6 +148,16 @@ public class EnumTests {
         Assertions.assertNotEquals(PriorityModel.HIGH, PriorityModel.fromValue(200));
 
         Assertions.assertEquals(100, PriorityModel.HIGH.getValue());
+      HttpClient httpClient = new HttpClient() {
+        @Override
+        public Mono<HttpResponse> send(HttpRequest httpRequest) {
+
+          Assertions.assertTrue(httpRequest.getUrl().getQuery() != null && httpRequest.getUrl().getQuery().contains("record=" + OlympicRecordModel.OLYMPIC_100_METERS.toString()));
+          return Mono.just(new MockHttpResponse(httpRequest, 200, OlympicRecordModel.OLYMPIC_100_METERS.getValue()));
+        }
+      };
+      EnumServiceClient client = new EnumServiceClientBuilder().endpoint("http://localhost:3000").httpClient(httpClient).buildClient();
+      client.setOlympicRecord(OlympicRecordModel.OLYMPIC_100_METERS, "application/json");
     }
 
     private static void verifyQuery(String query, String key, String value) {

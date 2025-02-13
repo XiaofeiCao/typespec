@@ -24,6 +24,7 @@ import java.util.stream.Collectors;
 import tsptest.enumservice.implementation.EnumServiceClientImpl;
 import tsptest.enumservice.models.Color;
 import tsptest.enumservice.models.ColorModel;
+import tsptest.enumservice.models.OlympicRecordModel;
 import tsptest.enumservice.models.Operation;
 import tsptest.enumservice.models.OperationStateValues;
 import tsptest.enumservice.models.Priority;
@@ -525,6 +526,32 @@ public final class EnumServiceClient {
     public Response<BinaryData> setStringEnumArrayHeaderWithResponse(List<String> colorArray,
         RequestOptions requestOptions) {
         return this.serviceClient.setStringEnumArrayHeaderWithResponse(colorArray, requestOptions);
+    }
+
+    /**
+     * The setOlympicRecord operation.
+     * <p><strong>Response Body Schema</strong></p>
+     * 
+     * <pre>
+     * {@code
+     * double
+     * }
+     * </pre>
+     * 
+     * @param record The record parameter. Allowed values: 9.58, 19.3.
+     * @param accept The accept parameter.
+     * @param requestOptions The options to configure the HTTP request before HTTP client sends it.
+     * @throws HttpResponseException thrown if the request is rejected by server.
+     * @throws ClientAuthenticationException thrown if the request is rejected by server on status code 401.
+     * @throws ResourceNotFoundException thrown if the request is rejected by server on status code 404.
+     * @throws ResourceModifiedException thrown if the request is rejected by server on status code 409.
+     * @return the response body along with {@link Response}.
+     */
+    @Generated
+    @ServiceMethod(returns = ReturnType.SINGLE)
+    public Response<BinaryData> setOlympicRecordWithResponse(OlympicRecordModel record, String accept,
+        RequestOptions requestOptions) {
+        return this.serviceClient.setOlympicRecordWithResponse(record, accept, requestOptions);
     }
 
     /**
@@ -1087,5 +1114,27 @@ public final class EnumServiceClient {
         return setStringEnumArrayHeaderWithResponse(colorArray.stream()
             .map(paramItemValue -> Objects.toString(paramItemValue, ""))
             .collect(Collectors.toList()), requestOptions).getValue().toObject(String.class);
+    }
+
+    /**
+     * The setOlympicRecord operation.
+     * 
+     * @param record The record parameter.
+     * @param accept The accept parameter.
+     * @throws IllegalArgumentException thrown if parameters fail the validation.
+     * @throws HttpResponseException thrown if the request is rejected by server.
+     * @throws ClientAuthenticationException thrown if the request is rejected by server on status code 401.
+     * @throws ResourceNotFoundException thrown if the request is rejected by server on status code 404.
+     * @throws ResourceModifiedException thrown if the request is rejected by server on status code 409.
+     * @throws RuntimeException all other wrapped checked exceptions if the request fails to be sent.
+     * @return the response.
+     */
+    @Generated
+    @ServiceMethod(returns = ReturnType.SINGLE)
+    public double setOlympicRecord(OlympicRecordModel record, String accept) {
+        // Generated convenience method for setOlympicRecordWithResponse
+        RequestOptions requestOptions = new RequestOptions();
+        return setOlympicRecordWithResponse(record, accept, requestOptions).getValue()
+            .toObject(Double.class);
     }
 }

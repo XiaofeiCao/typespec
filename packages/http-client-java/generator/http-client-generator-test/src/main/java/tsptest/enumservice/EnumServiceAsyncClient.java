@@ -26,6 +26,7 @@ import reactor.core.publisher.Mono;
 import tsptest.enumservice.implementation.EnumServiceClientImpl;
 import tsptest.enumservice.models.Color;
 import tsptest.enumservice.models.ColorModel;
+import tsptest.enumservice.models.OlympicRecordModel;
 import tsptest.enumservice.models.Operation;
 import tsptest.enumservice.models.OperationStateValues;
 import tsptest.enumservice.models.Priority;
@@ -533,6 +534,32 @@ public final class EnumServiceAsyncClient {
     public Mono<Response<BinaryData>> setStringEnumArrayHeaderWithResponse(List<String> colorArray,
         RequestOptions requestOptions) {
         return this.serviceClient.setStringEnumArrayHeaderWithResponseAsync(colorArray, requestOptions);
+    }
+
+    /**
+     * The setOlympicRecord operation.
+     * <p><strong>Response Body Schema</strong></p>
+     * 
+     * <pre>
+     * {@code
+     * double
+     * }
+     * </pre>
+     * 
+     * @param record The record parameter. Allowed values: 9.58, 19.3.
+     * @param accept The accept parameter.
+     * @param requestOptions The options to configure the HTTP request before HTTP client sends it.
+     * @throws HttpResponseException thrown if the request is rejected by server.
+     * @throws ClientAuthenticationException thrown if the request is rejected by server on status code 401.
+     * @throws ResourceNotFoundException thrown if the request is rejected by server on status code 404.
+     * @throws ResourceModifiedException thrown if the request is rejected by server on status code 409.
+     * @return the response body along with {@link Response} on successful completion of {@link Mono}.
+     */
+    @Generated
+    @ServiceMethod(returns = ReturnType.SINGLE)
+    public Mono<Response<BinaryData>> setOlympicRecordWithResponse(String record, String accept,
+        RequestOptions requestOptions) {
+        return this.serviceClient.setOlympicRecordWithResponseAsync(record, accept, requestOptions);
     }
 
     /**
@@ -1118,5 +1145,28 @@ public final class EnumServiceAsyncClient {
             .map(paramItemValue -> Objects.toString(paramItemValue, ""))
             .collect(Collectors.toList()), requestOptions).flatMap(FluxUtil::toMono)
                 .map(protocolMethodData -> protocolMethodData.toObject(String.class));
+    }
+
+    /**
+     * The setOlympicRecord operation.
+     * 
+     * @param record The record parameter.
+     * @param accept The accept parameter.
+     * @throws IllegalArgumentException thrown if parameters fail the validation.
+     * @throws HttpResponseException thrown if the request is rejected by server.
+     * @throws ClientAuthenticationException thrown if the request is rejected by server on status code 401.
+     * @throws ResourceNotFoundException thrown if the request is rejected by server on status code 404.
+     * @throws ResourceModifiedException thrown if the request is rejected by server on status code 409.
+     * @throws RuntimeException all other wrapped checked exceptions if the request fails to be sent.
+     * @return the response body on successful completion of {@link Mono}.
+     */
+    @Generated
+    @ServiceMethod(returns = ReturnType.SINGLE)
+    public Mono<Double> setOlympicRecord(OlympicRecordModel record, String accept) {
+        // Generated convenience method for setOlympicRecordWithResponse
+        RequestOptions requestOptions = new RequestOptions();
+        return setOlympicRecordWithResponse(String.valueOf(record.getValue()), accept, requestOptions)
+            .flatMap(FluxUtil::toMono)
+            .map(protocolMethodData -> protocolMethodData.toObject(Double.class));
     }
 }

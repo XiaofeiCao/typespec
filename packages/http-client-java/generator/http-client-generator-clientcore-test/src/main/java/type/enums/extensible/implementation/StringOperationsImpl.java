@@ -8,6 +8,7 @@ import io.clientcore.core.http.annotation.BodyParam;
 import io.clientcore.core.http.annotation.HeaderParam;
 import io.clientcore.core.http.annotation.HostParam;
 import io.clientcore.core.http.annotation.HttpRequestInformation;
+import io.clientcore.core.http.annotation.QueryParam;
 import io.clientcore.core.http.annotation.UnexpectedResponseExceptionDetail;
 import io.clientcore.core.http.exception.HttpResponseException;
 import io.clientcore.core.http.models.HttpMethod;
@@ -52,6 +53,7 @@ public final class StringOperationsImpl {
             expectedStatusCodes = { 200 })
         @UnexpectedResponseExceptionDetail
         Response<DaysOfWeekExtensibleEnum> getKnownValueSync(@HostParam("endpoint") String endpoint,
+            @QueryParam("enum") DaysOfWeekExtensibleEnum daysOfWeekExtensibleEnum,
             @HeaderParam("Accept") String accept, RequestOptions requestOptions);
 
         @HttpRequestInformation(
@@ -97,7 +99,7 @@ public final class StringOperationsImpl {
      */
     public Response<DaysOfWeekExtensibleEnum> getKnownValueWithResponse(RequestOptions requestOptions) {
         final String accept = "application/json";
-        return service.getKnownValueSync(this.client.getEndpoint(), accept, requestOptions);
+        return service.getKnownValueSync(this.client.getEndpoint(), DaysOfWeekExtensibleEnum.MONDAY, accept, requestOptions);
     }
 
     /**
