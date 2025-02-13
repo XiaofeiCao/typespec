@@ -205,4 +205,8 @@ interface EnumOp {
     })
     colorArrayOpt?: ColorModel[],
   ): string;
+
+  @post
+  @route("operation/setolympicrecord")
+  setOlympicRecord(@query record: OlympicRecordModel): OlympicRecordModel;
 }
