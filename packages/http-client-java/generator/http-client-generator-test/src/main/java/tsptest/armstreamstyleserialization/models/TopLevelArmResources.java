@@ -4,7 +4,7 @@
 
 package tsptest.armstreamstyleserialization.models;
 
-import com.azure.core.util.Context;
+import azure.resourcemanager.foundations.models.TopLevelArmResourceTagsUpdate;
 
 /**
  * Resource collection API of TopLevelArmResources.
@@ -17,7 +17,7 @@ public interface TopLevelArmResources {
      * @param topLevelArmResourceName arm resource name for path.
      * @param properties The resource properties to be updated.
      * @throws IllegalArgumentException thrown if parameters fail the validation.
-     * @throws com.azure.core.management.exception.ManagementException thrown if the request is rejected by server.
+     * @throws HttpResponseException thrown if the service returns an error.
      * @throws RuntimeException all other wrapped checked exceptions if the request fails to be sent.
      * @return concrete tracked resource types can be created by aliasing this type using a specific property type.
      */
@@ -30,12 +30,11 @@ public interface TopLevelArmResources {
      * @param resourceGroupName The name of the resource group. The name is case insensitive.
      * @param topLevelArmResourceName arm resource name for path.
      * @param properties The resource properties to be updated.
-     * @param context The context to associate with this operation.
      * @throws IllegalArgumentException thrown if parameters fail the validation.
-     * @throws com.azure.core.management.exception.ManagementException thrown if the request is rejected by server.
+     * @throws HttpResponseException thrown if the service returns an error.
      * @throws RuntimeException all other wrapped checked exceptions if the request fails to be sent.
      * @return concrete tracked resource types can be created by aliasing this type using a specific property type.
      */
     TopLevelArmResource update(String resourceGroupName, String topLevelArmResourceName,
-        TopLevelArmResourceTagsUpdate properties, Context context);
+        TopLevelArmResourceTagsUpdate properties);
 }

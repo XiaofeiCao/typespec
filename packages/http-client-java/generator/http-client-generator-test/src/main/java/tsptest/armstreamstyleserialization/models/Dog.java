@@ -4,22 +4,23 @@
 
 package tsptest.armstreamstyleserialization.models;
 
-import com.azure.core.annotation.Immutable;
-import com.azure.json.JsonReader;
-import com.azure.json.JsonSerializable;
-import com.azure.json.JsonToken;
-import com.azure.json.JsonWriter;
+import io.clientcore.core.annotations.Metadata;
+import io.clientcore.core.annotations.TypeConditions;
+import io.clientcore.core.serialization.json.JsonReader;
+import io.clientcore.core.serialization.json.JsonSerializable;
+import io.clientcore.core.serialization.json.JsonToken;
+import io.clientcore.core.serialization.json.JsonWriter;
 import java.io.IOException;
 
 /**
  * Test extensible enum type for discriminator.
  */
-@Immutable
+@Metadata(conditions = { TypeConditions.IMMUTABLE })
 public class Dog implements JsonSerializable<Dog> {
     /*
      * discriminator property
      */
-    private DogKind kind = DogKind.fromString("Dog");
+    private DogKind kind = DogKind.fromValue("Dog");
 
     /*
      * Weight of the dog
@@ -101,7 +102,7 @@ public class Dog implements JsonSerializable<Dog> {
     public JsonWriter toJson(JsonWriter jsonWriter) throws IOException {
         jsonWriter.writeStartObject();
         jsonWriter.writeIntField("weight", this.weight);
-        jsonWriter.writeStringField("kind", this.kind == null ? null : this.kind.toString());
+        jsonWriter.writeStringField("kind", this.kind == null ? null : this.kind.getValue());
         return jsonWriter.writeEndObject();
     }
 
@@ -151,7 +152,7 @@ public class Dog implements JsonSerializable<Dog> {
                 } else if ("dna".equals(fieldName)) {
                     deserializedDog.dna = reader.getString();
                 } else if ("kind".equals(fieldName)) {
-                    deserializedDog.kind = DogKind.fromString(reader.getString());
+                    deserializedDog.kind = DogKind.fromValue(reader.getString());
                 } else {
                     reader.skipChildren();
                 }

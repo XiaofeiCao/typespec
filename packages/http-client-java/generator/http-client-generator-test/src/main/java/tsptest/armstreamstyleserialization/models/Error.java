@@ -4,19 +4,20 @@
 
 package tsptest.armstreamstyleserialization.models;
 
-import com.azure.core.annotation.Immutable;
-import com.azure.core.management.exception.AdditionalInfo;
-import com.azure.core.management.exception.ManagementError;
-import com.azure.json.JsonReader;
-import com.azure.json.JsonToken;
-import com.azure.json.JsonWriter;
+import com.azure.v2.core.management.exception.AdditionalInfo;
+import com.azure.v2.core.management.exception.ManagementError;
+import io.clientcore.core.annotations.Metadata;
+import io.clientcore.core.annotations.TypeConditions;
+import io.clientcore.core.serialization.json.JsonReader;
+import io.clientcore.core.serialization.json.JsonToken;
+import io.clientcore.core.serialization.json.JsonWriter;
 import java.io.IOException;
 import java.util.List;
 
 /**
  * The Error model.
  */
-@Immutable
+@Metadata(conditions = { TypeConditions.IMMUTABLE })
 public final class Error extends ManagementError {
     /*
      * The details property.

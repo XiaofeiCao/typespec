@@ -4,10 +4,10 @@
 
 package tsptest.armstreamstyleserialization.implementation;
 
-import com.azure.core.http.rest.Response;
-import com.azure.core.http.rest.SimpleResponse;
-import com.azure.core.util.Context;
-import com.azure.core.util.logging.ClientLogger;
+import com.azure.v2.core.http.rest.SimpleResponse;
+import io.clientcore.core.http.SimpleResponse;
+import io.clientcore.core.http.models.Response;
+import io.clientcore.core.instrumentation.logging.ClientLogger;
 import tsptest.armstreamstyleserialization.fluent.FishesClient;
 import tsptest.armstreamstyleserialization.fluent.models.FishInner;
 import tsptest.armstreamstyleserialization.fluent.models.OutputOnlyModelInner;
@@ -28,8 +28,8 @@ public final class FishesImpl implements Fishes {
         this.serviceManager = serviceManager;
     }
 
-    public Response<Fish> getModelWithResponse(Context context) {
-        Response<FishInner> inner = this.serviceClient().getModelWithResponse(context);
+    public Response<Fish> getModelWithResponse() {
+        Response<FishInner> inner = this.serviceClient().getModelWithResponse();
         if (inner != null) {
             return new SimpleResponse<>(inner.getRequest(), inner.getStatusCode(), inner.getHeaders(),
                 new FishImpl(inner.getValue(), this.manager()));
@@ -47,8 +47,8 @@ public final class FishesImpl implements Fishes {
         }
     }
 
-    public Response<Fish> putModelWithResponse(FishInner fish, Context context) {
-        Response<FishInner> inner = this.serviceClient().putModelWithResponse(fish, context);
+    public Response<Fish> putModelWithResponse(FishInner fish) {
+        Response<FishInner> inner = this.serviceClient().putModelWithResponse(fish);
         if (inner != null) {
             return new SimpleResponse<>(inner.getRequest(), inner.getStatusCode(), inner.getHeaders(),
                 new FishImpl(inner.getValue(), this.manager()));
@@ -66,8 +66,8 @@ public final class FishesImpl implements Fishes {
         }
     }
 
-    public Response<OutputOnlyModel> getOutputOnlyModelWithResponse(Context context) {
-        Response<OutputOnlyModelInner> inner = this.serviceClient().getOutputOnlyModelWithResponse(context);
+    public Response<OutputOnlyModel> getOutputOnlyModelWithResponse() {
+        Response<OutputOnlyModelInner> inner = this.serviceClient().getOutputOnlyModelWithResponse();
         if (inner != null) {
             return new SimpleResponse<>(inner.getRequest(), inner.getStatusCode(), inner.getHeaders(),
                 new OutputOnlyModelImpl(inner.getValue(), this.manager()));

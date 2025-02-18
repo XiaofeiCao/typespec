@@ -4,11 +4,11 @@
 
 package tsptest.armstreamstyleserialization.implementation;
 
-import com.azure.core.http.rest.PagedFlux;
-import com.azure.core.http.rest.PagedIterable;
-import com.azure.core.http.rest.PagedResponse;
-import com.azure.core.http.rest.PagedResponseBase;
-import com.azure.core.util.CoreUtils;
+import com.azure.v2.core.http.rest.PagedFlux;
+import com.azure.v2.core.http.rest.PagedIterable;
+import com.azure.v2.core.http.rest.PagedResponse;
+import com.azure.v2.core.http.rest.PagedResponseBase;
+import com.azure.v2.core.util.CoreUtils;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;

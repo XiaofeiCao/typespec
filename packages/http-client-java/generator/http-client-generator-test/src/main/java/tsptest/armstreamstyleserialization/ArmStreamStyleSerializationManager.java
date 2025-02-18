@@ -4,26 +4,26 @@
 
 package tsptest.armstreamstyleserialization;
 
-import com.azure.core.credential.TokenCredential;
-import com.azure.core.http.HttpClient;
-import com.azure.core.http.HttpPipeline;
-import com.azure.core.http.HttpPipelineBuilder;
-import com.azure.core.http.HttpPipelinePosition;
-import com.azure.core.http.policy.AddDatePolicy;
-import com.azure.core.http.policy.AddHeadersFromContextPolicy;
-import com.azure.core.http.policy.BearerTokenAuthenticationPolicy;
-import com.azure.core.http.policy.HttpLogOptions;
-import com.azure.core.http.policy.HttpLoggingPolicy;
-import com.azure.core.http.policy.HttpPipelinePolicy;
-import com.azure.core.http.policy.HttpPolicyProviders;
-import com.azure.core.http.policy.RequestIdPolicy;
-import com.azure.core.http.policy.RetryOptions;
-import com.azure.core.http.policy.RetryPolicy;
-import com.azure.core.http.policy.UserAgentPolicy;
-import com.azure.core.management.profile.AzureProfile;
-import com.azure.core.util.Configuration;
-import com.azure.core.util.CoreUtils;
-import com.azure.core.util.logging.ClientLogger;
+import com.azure.v2.core.credential.TokenCredential;
+import com.azure.v2.core.http.HttpClient;
+import com.azure.v2.core.http.HttpPipeline;
+import com.azure.v2.core.http.HttpPipelineBuilder;
+import com.azure.v2.core.http.HttpPipelinePosition;
+import com.azure.v2.core.http.policy.AddDatePolicy;
+import com.azure.v2.core.http.policy.AddHeadersFromContextPolicy;
+import com.azure.v2.core.http.policy.BearerTokenAuthenticationPolicy;
+import com.azure.v2.core.http.policy.HttpLogOptions;
+import com.azure.v2.core.http.policy.HttpLoggingPolicy;
+import com.azure.v2.core.http.policy.HttpPipelinePolicy;
+import com.azure.v2.core.http.policy.HttpPolicyProviders;
+import com.azure.v2.core.http.policy.RequestIdPolicy;
+import com.azure.v2.core.http.policy.RetryOptions;
+import com.azure.v2.core.http.policy.RetryPolicy;
+import com.azure.v2.core.http.policy.UserAgentPolicy;
+import com.azure.v2.core.management.profile.AzureProfile;
+import com.azure.v2.core.util.Configuration;
+import com.azure.v2.core.util.logging.ClientLogger;
+import io.clientcore.core.util.CoreUtils;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -97,7 +97,7 @@ public final class ArmStreamStyleSerializationManager {
      * @return the Configurable instance allowing configurations.
      */
     public static Configurable configure() {
-        return new ArmStreamStyleSerializationManager.Configurable();
+        return new Configurable();
     }
 
     /**

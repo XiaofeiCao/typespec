@@ -4,11 +4,12 @@
 
 package tsptest.armstreamstyleserialization.models;
 
-import com.azure.core.annotation.Fluent;
-import com.azure.core.util.logging.ClientLogger;
-import com.azure.json.JsonReader;
-import com.azure.json.JsonToken;
-import com.azure.json.JsonWriter;
+import io.clientcore.core.annotations.Metadata;
+import io.clientcore.core.annotations.TypeConditions;
+import io.clientcore.core.instrumentation.logging.ClientLogger;
+import io.clientcore.core.serialization.json.JsonReader;
+import io.clientcore.core.serialization.json.JsonToken;
+import io.clientcore.core.serialization.json.JsonWriter;
 import java.io.IOException;
 import tsptest.armstreamstyleserialization.fluent.models.AnotherFishProperties;
 import tsptest.armstreamstyleserialization.fluent.models.FishProperties;
@@ -16,7 +17,7 @@ import tsptest.armstreamstyleserialization.fluent.models.FishProperties;
 /**
  * The third level model GoblinShark in polymorphic multiple levels inheritance.
  */
-@Fluent
+@Metadata(conditions = { TypeConditions.FLUENT })
 public final class GoblinShark extends Shark {
     /*
      * Discriminator property for Fish.

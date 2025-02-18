@@ -4,8 +4,7 @@
 
 package tsptest.armstreamstyleserialization.models;
 
-import com.azure.core.http.rest.Response;
-import com.azure.core.util.Context;
+import io.clientcore.core.http.models.Response;
 import tsptest.armstreamstyleserialization.fluent.models.FunctionInner;
 
 /**
@@ -16,20 +15,19 @@ public interface Functions {
      * The createFunction operation.
      * 
      * @param function The function parameter.
-     * @param context The context to associate with this operation.
      * @throws IllegalArgumentException thrown if parameters fail the validation.
-     * @throws com.azure.core.management.exception.ManagementException thrown if the request is rejected by server.
+     * @throws HttpResponseException thrown if the service returns an error.
      * @throws RuntimeException all other wrapped checked exceptions if the request fails to be sent.
-     * @return the response body along with {@link Response}.
+     * @return the response.
      */
-    Response<Function> createFunctionWithResponse(FunctionInner function, Context context);
+    Response<Function> createFunctionWithResponse(FunctionInner function);
 
     /**
      * The createFunction operation.
      * 
      * @param function The function parameter.
      * @throws IllegalArgumentException thrown if parameters fail the validation.
-     * @throws com.azure.core.management.exception.ManagementException thrown if the request is rejected by server.
+     * @throws HttpResponseException thrown if the service returns an error.
      * @throws RuntimeException all other wrapped checked exceptions if the request fails to be sent.
      * @return the response.
      */

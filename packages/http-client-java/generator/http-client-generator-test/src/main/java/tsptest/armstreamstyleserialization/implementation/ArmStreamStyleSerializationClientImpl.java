@@ -4,25 +4,23 @@
 
 package tsptest.armstreamstyleserialization.implementation;
 
-import com.azure.core.annotation.ServiceClient;
-import com.azure.core.http.HttpHeaderName;
-import com.azure.core.http.HttpHeaders;
-import com.azure.core.http.HttpPipeline;
-import com.azure.core.http.HttpResponse;
-import com.azure.core.http.rest.Response;
-import com.azure.core.management.AzureEnvironment;
-import com.azure.core.management.exception.ManagementError;
-import com.azure.core.management.exception.ManagementException;
-import com.azure.core.management.polling.PollResult;
-import com.azure.core.management.polling.PollerFactory;
-import com.azure.core.util.Context;
-import com.azure.core.util.CoreUtils;
-import com.azure.core.util.logging.ClientLogger;
-import com.azure.core.util.polling.AsyncPollResponse;
-import com.azure.core.util.polling.LongRunningOperationStatus;
-import com.azure.core.util.polling.PollerFlux;
-import com.azure.core.util.serializer.SerializerAdapter;
-import com.azure.core.util.serializer.SerializerEncoding;
+import com.azure.v2.core.http.HttpHeaders;
+import com.azure.v2.core.http.HttpResponse;
+import com.azure.v2.core.http.rest.Response;
+import com.azure.v2.core.management.exception.ManagementError;
+import com.azure.v2.core.management.exception.ManagementException;
+import com.azure.v2.core.management.polling.PollResult;
+import com.azure.v2.core.management.polling.PollerFactory;
+import com.azure.v2.core.util.Context;
+import com.azure.v2.core.util.CoreUtils;
+import com.azure.v2.core.util.polling.AsyncPollResponse;
+import com.azure.v2.core.util.polling.LongRunningOperationStatus;
+import com.azure.v2.core.util.polling.PollerFlux;
+import com.azure.v2.core.util.serializer.SerializerEncoding;
+import io.clientcore.core.annotations.ServiceClient;
+import io.clientcore.core.http.models.HttpHeaderName;
+import io.clientcore.core.http.pipeline.HttpPipeline;
+import io.clientcore.core.instrumentation.logging.ClientLogger;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.nio.ByteBuffer;
@@ -98,20 +96,6 @@ public final class ArmStreamStyleSerializationClientImpl implements ArmStreamSty
     }
 
     /**
-     * The serializer to serialize an object into a string.
-     */
-    private final SerializerAdapter serializerAdapter;
-
-    /**
-     * Gets The serializer to serialize an object into a string.
-     * 
-     * @return the serializerAdapter value.
-     */
-    SerializerAdapter getSerializerAdapter() {
-        return this.serializerAdapter;
-    }
-
-    /**
      * The default poll interval for long-running operation.
      */
     private final Duration defaultPollInterval;
@@ -171,17 +155,11 @@ public final class ArmStreamStyleSerializationClientImpl implements ArmStreamSty
      * Initializes an instance of ArmStreamStyleSerializationClient client.
      * 
      * @param httpPipeline The HTTP pipeline to send requests through.
-     * @param serializerAdapter The serializer to serialize an object into a string.
-     * @param defaultPollInterval The default poll interval for long-running operation.
-     * @param environment The Azure environment.
      * @param endpoint Service host.
      * @param subscriptionId The ID of the target subscription. The value must be an UUID.
      */
-    ArmStreamStyleSerializationClientImpl(HttpPipeline httpPipeline, SerializerAdapter serializerAdapter,
-        Duration defaultPollInterval, AzureEnvironment environment, String endpoint, String subscriptionId) {
+    ArmStreamStyleSerializationClientImpl(HttpPipeline httpPipeline, String endpoint, String subscriptionId) {
         this.httpPipeline = httpPipeline;
-        this.serializerAdapter = serializerAdapter;
-        this.defaultPollInterval = defaultPollInterval;
         this.endpoint = endpoint;
         this.subscriptionId = subscriptionId;
         this.apiVersion = "2023-12-01-preview";

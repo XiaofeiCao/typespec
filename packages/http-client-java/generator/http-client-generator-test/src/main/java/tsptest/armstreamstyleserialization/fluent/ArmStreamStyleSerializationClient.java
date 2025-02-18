@@ -4,7 +4,7 @@
 
 package tsptest.armstreamstyleserialization.fluent;
 
-import com.azure.core.http.HttpPipeline;
+import io.clientcore.core.http.pipeline.HttpPipeline;
 import java.time.Duration;
 
 /**

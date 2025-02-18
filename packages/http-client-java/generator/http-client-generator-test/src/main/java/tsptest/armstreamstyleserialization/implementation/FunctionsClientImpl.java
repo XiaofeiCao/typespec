@@ -4,21 +4,23 @@
 
 package tsptest.armstreamstyleserialization.implementation;
 
-import com.azure.core.annotation.BodyParam;
-import com.azure.core.annotation.ExpectedResponses;
-import com.azure.core.annotation.HeaderParam;
-import com.azure.core.annotation.Host;
-import com.azure.core.annotation.HostParam;
-import com.azure.core.annotation.Put;
-import com.azure.core.annotation.ReturnType;
-import com.azure.core.annotation.ServiceInterface;
-import com.azure.core.annotation.ServiceMethod;
-import com.azure.core.annotation.UnexpectedResponseExceptionType;
-import com.azure.core.http.rest.Response;
-import com.azure.core.http.rest.RestProxy;
-import com.azure.core.management.exception.ManagementException;
-import com.azure.core.util.Context;
-import com.azure.core.util.FluxUtil;
+import com.azure.v2.core.util.FluxUtil;
+import io.clientcore.core.annotations.ReturnType;
+import io.clientcore.core.annotations.ServiceInterface;
+import io.clientcore.core.annotations.ServiceMethod;
+import io.clientcore.core.http.RestProxy;
+import io.clientcore.core.http.annotations.BodyParam;
+import io.clientcore.core.http.annotations.HeaderParam;
+import io.clientcore.core.http.annotations.HostParam;
+import io.clientcore.core.http.annotations.HttpRequestInformation;
+import io.clientcore.core.http.annotations.UnexpectedResponseExceptionDetail;
+import io.clientcore.core.http.exceptions.HttpResponseException;
+import io.clientcore.core.http.models.HttpMethod;
+import io.clientcore.core.http.models.Response;
+import io.clientcore.core.http.pipeline.HttpPipeline;
+import io.clientcore.core.serialization.ObjectSerializer;
+import io.clientcore.core.utils.Context;
+import java.lang.reflect.InvocationTargetException;
 import reactor.core.publisher.Mono;
 import tsptest.armstreamstyleserialization.fluent.FunctionsClient;
 import tsptest.armstreamstyleserialization.fluent.models.FunctionInner;
@@ -43,8 +45,7 @@ public final class FunctionsClientImpl implements FunctionsClient {
      * @param client the instance of the service client containing this operation class.
      */
     FunctionsClientImpl(ArmStreamStyleSerializationClientImpl client) {
-        this.service
-            = RestProxy.create(FunctionsService.class, client.getHttpPipeline(), client.getSerializerAdapter());
+        this.service = RestProxy.create(FunctionsService.class, client.getHttpPipeline());
         this.client = client;
     }
 
@@ -52,15 +53,26 @@ public final class FunctionsClientImpl implements FunctionsClient {
      * The interface defining all the services for ArmStreamStyleSerializationClientFunctions to be used by the proxy
      * service to perform REST calls.
      */
-    @Host("{endpoint}")
-    @ServiceInterface(name = "ArmStreamStyleSerial")
+    @ServiceInterface(name = "ArmStreamStyleSerial", host = "{endpoint}")
     public interface FunctionsService {
-        @Put("/function")
-        @ExpectedResponses({ 200 })
-        @UnexpectedResponseExceptionType(ManagementException.class)
+        static FunctionsService getNewInstance(HttpPipeline pipeline, ObjectSerializer serializer) {
+            try {
+                Class<?> clazz
+                    = Class.forName("tsptest.armstreamstyleserialization.implementation.FunctionsServiceImpl");
+                return (FunctionsService) clazz.getMethod("getNewInstance", HttpPipeline.class, ObjectSerializer.class)
+                    .invoke(null, pipeline, serializer);
+            } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException
+                | InvocationTargetException e) {
+                throw new RuntimeException(e);
+            }
+
+        }
+
+        @HttpRequestInformation(method = HttpMethod.PUT, path = "/function", expectedStatusCodes = { 200 })
+        @UnexpectedResponseExceptionDetail
         Mono<Response<FunctionInner>> createFunction(@HostParam("endpoint") String endpoint,
             @HeaderParam("Content-Type") String contentType, @HeaderParam("Accept") String accept,
-            @BodyParam("application/json") FunctionInner function, Context context);
+            @BodyParam("application/json") FunctionInner function);
     }
 
     /**
@@ -68,9 +80,9 @@ public final class FunctionsClientImpl implements FunctionsClient {
      * 
      * @param function The function parameter.
      * @throws IllegalArgumentException thrown if parameters fail the validation.
-     * @throws ManagementException thrown if the request is rejected by server.
+     * @throws HttpResponseException thrown if the service returns an error.
      * @throws RuntimeException all other wrapped checked exceptions if the request fails to be sent.
-     * @return the response body along with {@link Response} on successful completion of {@link Mono}.
+     * @return the response body on successful completion of {@link Mono}.
      */
     @ServiceMethod(returns = ReturnType.SINGLE)
     private Mono<Response<FunctionInner>> createFunctionWithResponseAsync(FunctionInner function) {
@@ -86,8 +98,7 @@ public final class FunctionsClientImpl implements FunctionsClient {
         final String contentType = "application/json";
         final String accept = "application/json";
         return FluxUtil
-            .withContext(
-                context -> service.createFunction(this.client.getEndpoint(), contentType, accept, function, context))
+            .withContext(context -> service.createFunction(this.client.getEndpoint(), contentType, accept, function))
             .contextWrite(context -> context.putAll(FluxUtil.toReactorContext(this.client.getContext()).readOnly()));
     }
 
@@ -95,39 +106,11 @@ public final class FunctionsClientImpl implements FunctionsClient {
      * The createFunction operation.
      * 
      * @param function The function parameter.
-     * @param context The context to associate with this operation.
      * @throws IllegalArgumentException thrown if parameters fail the validation.
-     * @throws ManagementException thrown if the request is rejected by server.
-     * @throws RuntimeException all other wrapped checked exceptions if the request fails to be sent.
-     * @return the response body along with {@link Response} on successful completion of {@link Mono}.
-     */
-    @ServiceMethod(returns = ReturnType.SINGLE)
-    private Mono<Response<FunctionInner>> createFunctionWithResponseAsync(FunctionInner function, Context context) {
-        if (this.client.getEndpoint() == null) {
-            return Mono.error(
-                new IllegalArgumentException("Parameter this.client.getEndpoint() is required and cannot be null."));
-        }
-        if (function == null) {
-            return Mono.error(new IllegalArgumentException("Parameter function is required and cannot be null."));
-        } else {
-            function.validate();
-        }
-        final String contentType = "application/json";
-        final String accept = "application/json";
-        context = this.client.mergeContext(context);
-        return service.createFunction(this.client.getEndpoint(), contentType, accept, function, context);
-    }
-
-    /**
-     * The createFunction operation.
-     * 
-     * @param function The function parameter.
-     * @throws IllegalArgumentException thrown if parameters fail the validation.
-     * @throws ManagementException thrown if the request is rejected by server.
+     * @throws HttpResponseException thrown if the service returns an error.
      * @throws RuntimeException all other wrapped checked exceptions if the request fails to be sent.
      * @return the response body on successful completion of {@link Mono}.
      */
-    @ServiceMethod(returns = ReturnType.SINGLE)
     private Mono<FunctionInner> createFunctionAsync(FunctionInner function) {
         return createFunctionWithResponseAsync(function).flatMap(res -> Mono.justOrEmpty(res.getValue()));
     }
@@ -136,15 +119,13 @@ public final class FunctionsClientImpl implements FunctionsClient {
      * The createFunction operation.
      * 
      * @param function The function parameter.
-     * @param context The context to associate with this operation.
      * @throws IllegalArgumentException thrown if parameters fail the validation.
-     * @throws ManagementException thrown if the request is rejected by server.
+     * @throws HttpResponseException thrown if the service returns an error.
      * @throws RuntimeException all other wrapped checked exceptions if the request fails to be sent.
-     * @return the response body along with {@link Response}.
+     * @return the response.
      */
-    @ServiceMethod(returns = ReturnType.SINGLE)
-    public Response<FunctionInner> createFunctionWithResponse(FunctionInner function, Context context) {
-        return createFunctionWithResponseAsync(function, context).block();
+    public Response<FunctionInner> createFunctionWithResponse(FunctionInner function) {
+        return createFunctionWithResponseAsync(function).block();
     }
 
     /**
@@ -152,12 +133,11 @@ public final class FunctionsClientImpl implements FunctionsClient {
      * 
      * @param function The function parameter.
      * @throws IllegalArgumentException thrown if parameters fail the validation.
-     * @throws ManagementException thrown if the request is rejected by server.
+     * @throws HttpResponseException thrown if the service returns an error.
      * @throws RuntimeException all other wrapped checked exceptions if the request fails to be sent.
      * @return the response.
      */
-    @ServiceMethod(returns = ReturnType.SINGLE)
     public FunctionInner createFunction(FunctionInner function) {
-        return createFunctionWithResponse(function, Context.NONE).getValue();
+        return createFunctionWithResponse(function, Context.none()).getValue();
     }
 }

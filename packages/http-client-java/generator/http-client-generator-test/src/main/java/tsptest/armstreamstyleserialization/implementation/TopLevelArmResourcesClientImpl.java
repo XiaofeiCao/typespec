@@ -4,32 +4,33 @@
 
 package tsptest.armstreamstyleserialization.implementation;
 
-import com.azure.core.annotation.BodyParam;
-import com.azure.core.annotation.ExpectedResponses;
-import com.azure.core.annotation.HeaderParam;
-import com.azure.core.annotation.Host;
-import com.azure.core.annotation.HostParam;
-import com.azure.core.annotation.Patch;
-import com.azure.core.annotation.PathParam;
-import com.azure.core.annotation.QueryParam;
-import com.azure.core.annotation.ReturnType;
-import com.azure.core.annotation.ServiceInterface;
-import com.azure.core.annotation.ServiceMethod;
-import com.azure.core.annotation.UnexpectedResponseExceptionType;
-import com.azure.core.http.rest.Response;
-import com.azure.core.http.rest.RestProxy;
-import com.azure.core.management.exception.ManagementException;
-import com.azure.core.management.polling.PollResult;
-import com.azure.core.util.Context;
-import com.azure.core.util.FluxUtil;
-import com.azure.core.util.polling.PollerFlux;
-import com.azure.core.util.polling.SyncPoller;
+import azure.resourcemanager.foundations.models.TopLevelArmResourceTagsUpdate;
+import com.azure.v2.core.util.FluxUtil;
+import io.clientcore.core.annotations.ReturnType;
+import io.clientcore.core.annotations.ServiceInterface;
+import io.clientcore.core.annotations.ServiceMethod;
+import io.clientcore.core.http.RestProxy;
+import io.clientcore.core.http.annotations.BodyParam;
+import io.clientcore.core.http.annotations.HeaderParam;
+import io.clientcore.core.http.annotations.HostParam;
+import io.clientcore.core.http.annotations.HttpRequestInformation;
+import io.clientcore.core.http.annotations.PathParam;
+import io.clientcore.core.http.annotations.QueryParam;
+import io.clientcore.core.http.annotations.UnexpectedResponseExceptionDetail;
+import io.clientcore.core.http.exceptions.HttpResponseException;
+import io.clientcore.core.http.models.HttpMethod;
+import io.clientcore.core.http.models.Response;
+import io.clientcore.core.http.pipeline.HttpPipeline;
+import io.clientcore.core.management.polling.PollResult;
+import io.clientcore.core.serialization.ObjectSerializer;
+import io.clientcore.core.util.polling.PollerFlux;
+import io.clientcore.core.util.polling.SyncPoller;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.ByteBuffer;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import tsptest.armstreamstyleserialization.fluent.TopLevelArmResourcesClient;
 import tsptest.armstreamstyleserialization.fluent.models.TopLevelArmResourceInner;
-import tsptest.armstreamstyleserialization.models.TopLevelArmResourceTagsUpdate;
 
 /**
  * An instance of this class provides access to all the operations defined in TopLevelArmResourcesClient.
@@ -51,8 +52,7 @@ public final class TopLevelArmResourcesClientImpl implements TopLevelArmResource
      * @param client the instance of the service client containing this operation class.
      */
     TopLevelArmResourcesClientImpl(ArmStreamStyleSerializationClientImpl client) {
-        this.service = RestProxy.create(TopLevelArmResourcesService.class, client.getHttpPipeline(),
-            client.getSerializerAdapter());
+        this.service = RestProxy.create(TopLevelArmResourcesService.class, client.getHttpPipeline());
         this.client = client;
     }
 
@@ -60,18 +60,33 @@ public final class TopLevelArmResourcesClientImpl implements TopLevelArmResource
      * The interface defining all the services for ArmStreamStyleSerializationClientTopLevelArmResources to be used by
      * the proxy service to perform REST calls.
      */
-    @Host("{endpoint}")
-    @ServiceInterface(name = "ArmStreamStyleSerial")
+    @ServiceInterface(name = "ArmStreamStyleSerial", host = "{endpoint}")
     public interface TopLevelArmResourcesService {
-        @Patch("/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/TspTest.ArmStreamStyleSerialization/topLevelArmResources/{topLevelArmResourceName}")
-        @ExpectedResponses({ 200, 202 })
-        @UnexpectedResponseExceptionType(ManagementException.class)
+        static TopLevelArmResourcesService getNewInstance(HttpPipeline pipeline, ObjectSerializer serializer) {
+            try {
+                Class<?> clazz = Class
+                    .forName("tsptest.armstreamstyleserialization.implementation.TopLevelArmResourcesServiceImpl");
+                return (TopLevelArmResourcesService) clazz
+                    .getMethod("getNewInstance", HttpPipeline.class, ObjectSerializer.class)
+                    .invoke(null, pipeline, serializer);
+            } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException
+                | InvocationTargetException e) {
+                throw new RuntimeException(e);
+            }
+
+        }
+
+        @HttpRequestInformation(
+            method = HttpMethod.PATCH,
+            path = "/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/TspTest.ArmStreamStyleSerialization/topLevelArmResources/{topLevelArmResourceName}",
+            expectedStatusCodes = { 200, 202 })
+        @UnexpectedResponseExceptionDetail
         Mono<Response<Flux<ByteBuffer>>> update(@HostParam("endpoint") String endpoint,
             @QueryParam("api-version") String apiVersion, @PathParam("subscriptionId") String subscriptionId,
             @PathParam("resourceGroupName") String resourceGroupName,
             @PathParam("topLevelArmResourceName") String topLevelArmResourceName,
             @HeaderParam("Content-Type") String contentType, @HeaderParam("Accept") String accept,
-            @BodyParam("application/json") TopLevelArmResourceTagsUpdate properties, Context context);
+            @BodyParam("application/json") TopLevelArmResourceTagsUpdate properties);
     }
 
     /**
@@ -81,10 +96,10 @@ public final class TopLevelArmResourcesClientImpl implements TopLevelArmResource
      * @param topLevelArmResourceName arm resource name for path.
      * @param properties The resource properties to be updated.
      * @throws IllegalArgumentException thrown if parameters fail the validation.
-     * @throws ManagementException thrown if the request is rejected by server.
+     * @throws HttpResponseException thrown if the service returns an error.
      * @throws RuntimeException all other wrapped checked exceptions if the request fails to be sent.
-     * @return concrete tracked resource types can be created by aliasing this type using a specific property type along
-     * with {@link Response} on successful completion of {@link Mono}.
+     * @return concrete tracked resource types can be created by aliasing this type using a specific property type on
+     * successful completion of {@link Mono}.
      */
     @ServiceMethod(returns = ReturnType.SINGLE)
     private Mono<Response<Flux<ByteBuffer>>> updateWithResponseAsync(String resourceGroupName,
@@ -107,15 +122,13 @@ public final class TopLevelArmResourcesClientImpl implements TopLevelArmResource
         }
         if (properties == null) {
             return Mono.error(new IllegalArgumentException("Parameter properties is required and cannot be null."));
-        } else {
-            properties.validate();
         }
         final String contentType = "application/json";
         final String accept = "application/json";
         return FluxUtil
             .withContext(context -> service.update(this.client.getEndpoint(), this.client.getApiVersion(),
                 this.client.getSubscriptionId(), resourceGroupName, topLevelArmResourceName, contentType, accept,
-                properties, context))
+                properties))
             .contextWrite(context -> context.putAll(FluxUtil.toReactorContext(this.client.getContext()).readOnly()));
     }
 
@@ -125,55 +138,10 @@ public final class TopLevelArmResourcesClientImpl implements TopLevelArmResource
      * @param resourceGroupName The name of the resource group. The name is case insensitive.
      * @param topLevelArmResourceName arm resource name for path.
      * @param properties The resource properties to be updated.
-     * @param context The context to associate with this operation.
      * @throws IllegalArgumentException thrown if parameters fail the validation.
-     * @throws ManagementException thrown if the request is rejected by server.
+     * @throws HttpResponseException thrown if the service returns an error.
      * @throws RuntimeException all other wrapped checked exceptions if the request fails to be sent.
-     * @return concrete tracked resource types can be created by aliasing this type using a specific property type along
-     * with {@link Response} on successful completion of {@link Mono}.
-     */
-    @ServiceMethod(returns = ReturnType.SINGLE)
-    private Mono<Response<Flux<ByteBuffer>>> updateWithResponseAsync(String resourceGroupName,
-        String topLevelArmResourceName, TopLevelArmResourceTagsUpdate properties, Context context) {
-        if (this.client.getEndpoint() == null) {
-            return Mono.error(
-                new IllegalArgumentException("Parameter this.client.getEndpoint() is required and cannot be null."));
-        }
-        if (this.client.getSubscriptionId() == null) {
-            return Mono.error(new IllegalArgumentException(
-                "Parameter this.client.getSubscriptionId() is required and cannot be null."));
-        }
-        if (resourceGroupName == null) {
-            return Mono
-                .error(new IllegalArgumentException("Parameter resourceGroupName is required and cannot be null."));
-        }
-        if (topLevelArmResourceName == null) {
-            return Mono.error(
-                new IllegalArgumentException("Parameter topLevelArmResourceName is required and cannot be null."));
-        }
-        if (properties == null) {
-            return Mono.error(new IllegalArgumentException("Parameter properties is required and cannot be null."));
-        } else {
-            properties.validate();
-        }
-        final String contentType = "application/json";
-        final String accept = "application/json";
-        context = this.client.mergeContext(context);
-        return service.update(this.client.getEndpoint(), this.client.getApiVersion(), this.client.getSubscriptionId(),
-            resourceGroupName, topLevelArmResourceName, contentType, accept, properties, context);
-    }
-
-    /**
-     * Update a TopLevelArmResource.
-     * 
-     * @param resourceGroupName The name of the resource group. The name is case insensitive.
-     * @param topLevelArmResourceName arm resource name for path.
-     * @param properties The resource properties to be updated.
-     * @throws IllegalArgumentException thrown if parameters fail the validation.
-     * @throws ManagementException thrown if the request is rejected by server.
-     * @throws RuntimeException all other wrapped checked exceptions if the request fails to be sent.
-     * @return the {@link PollerFlux} for polling of concrete tracked resource types can be created by aliasing this
-     * type using a specific property type.
+     * @return concrete tracked resource types can be created by aliasing this type using a specific property type.
      */
     @ServiceMethod(returns = ReturnType.LONG_RUNNING_OPERATION)
     private PollerFlux<PollResult<TopLevelArmResourceInner>, TopLevelArmResourceInner> beginUpdateAsync(
@@ -191,35 +159,10 @@ public final class TopLevelArmResourcesClientImpl implements TopLevelArmResource
      * @param resourceGroupName The name of the resource group. The name is case insensitive.
      * @param topLevelArmResourceName arm resource name for path.
      * @param properties The resource properties to be updated.
-     * @param context The context to associate with this operation.
      * @throws IllegalArgumentException thrown if parameters fail the validation.
-     * @throws ManagementException thrown if the request is rejected by server.
+     * @throws HttpResponseException thrown if the service returns an error.
      * @throws RuntimeException all other wrapped checked exceptions if the request fails to be sent.
-     * @return the {@link PollerFlux} for polling of concrete tracked resource types can be created by aliasing this
-     * type using a specific property type.
-     */
-    @ServiceMethod(returns = ReturnType.LONG_RUNNING_OPERATION)
-    private PollerFlux<PollResult<TopLevelArmResourceInner>, TopLevelArmResourceInner> beginUpdateAsync(
-        String resourceGroupName, String topLevelArmResourceName, TopLevelArmResourceTagsUpdate properties,
-        Context context) {
-        context = this.client.mergeContext(context);
-        Mono<Response<Flux<ByteBuffer>>> mono
-            = updateWithResponseAsync(resourceGroupName, topLevelArmResourceName, properties, context);
-        return this.client.<TopLevelArmResourceInner, TopLevelArmResourceInner>getLroResult(mono,
-            this.client.getHttpPipeline(), TopLevelArmResourceInner.class, TopLevelArmResourceInner.class, context);
-    }
-
-    /**
-     * Update a TopLevelArmResource.
-     * 
-     * @param resourceGroupName The name of the resource group. The name is case insensitive.
-     * @param topLevelArmResourceName arm resource name for path.
-     * @param properties The resource properties to be updated.
-     * @throws IllegalArgumentException thrown if parameters fail the validation.
-     * @throws ManagementException thrown if the request is rejected by server.
-     * @throws RuntimeException all other wrapped checked exceptions if the request fails to be sent.
-     * @return the {@link SyncPoller} for polling of concrete tracked resource types can be created by aliasing this
-     * type using a specific property type.
+     * @return concrete tracked resource types can be created by aliasing this type using a specific property type.
      */
     @ServiceMethod(returns = ReturnType.LONG_RUNNING_OPERATION)
     public SyncPoller<PollResult<TopLevelArmResourceInner>, TopLevelArmResourceInner> beginUpdate(
@@ -233,28 +176,8 @@ public final class TopLevelArmResourcesClientImpl implements TopLevelArmResource
      * @param resourceGroupName The name of the resource group. The name is case insensitive.
      * @param topLevelArmResourceName arm resource name for path.
      * @param properties The resource properties to be updated.
-     * @param context The context to associate with this operation.
      * @throws IllegalArgumentException thrown if parameters fail the validation.
-     * @throws ManagementException thrown if the request is rejected by server.
-     * @throws RuntimeException all other wrapped checked exceptions if the request fails to be sent.
-     * @return the {@link SyncPoller} for polling of concrete tracked resource types can be created by aliasing this
-     * type using a specific property type.
-     */
-    @ServiceMethod(returns = ReturnType.LONG_RUNNING_OPERATION)
-    public SyncPoller<PollResult<TopLevelArmResourceInner>, TopLevelArmResourceInner> beginUpdate(
-        String resourceGroupName, String topLevelArmResourceName, TopLevelArmResourceTagsUpdate properties,
-        Context context) {
-        return this.beginUpdateAsync(resourceGroupName, topLevelArmResourceName, properties, context).getSyncPoller();
-    }
-
-    /**
-     * Update a TopLevelArmResource.
-     * 
-     * @param resourceGroupName The name of the resource group. The name is case insensitive.
-     * @param topLevelArmResourceName arm resource name for path.
-     * @param properties The resource properties to be updated.
-     * @throws IllegalArgumentException thrown if parameters fail the validation.
-     * @throws ManagementException thrown if the request is rejected by server.
+     * @throws HttpResponseException thrown if the service returns an error.
      * @throws RuntimeException all other wrapped checked exceptions if the request fails to be sent.
      * @return concrete tracked resource types can be created by aliasing this type using a specific property type on
      * successful completion of {@link Mono}.
@@ -272,32 +195,11 @@ public final class TopLevelArmResourcesClientImpl implements TopLevelArmResource
      * @param resourceGroupName The name of the resource group. The name is case insensitive.
      * @param topLevelArmResourceName arm resource name for path.
      * @param properties The resource properties to be updated.
-     * @param context The context to associate with this operation.
      * @throws IllegalArgumentException thrown if parameters fail the validation.
-     * @throws ManagementException thrown if the request is rejected by server.
-     * @throws RuntimeException all other wrapped checked exceptions if the request fails to be sent.
-     * @return concrete tracked resource types can be created by aliasing this type using a specific property type on
-     * successful completion of {@link Mono}.
-     */
-    @ServiceMethod(returns = ReturnType.SINGLE)
-    private Mono<TopLevelArmResourceInner> updateAsync(String resourceGroupName, String topLevelArmResourceName,
-        TopLevelArmResourceTagsUpdate properties, Context context) {
-        return beginUpdateAsync(resourceGroupName, topLevelArmResourceName, properties, context).last()
-            .flatMap(this.client::getLroFinalResultOrError);
-    }
-
-    /**
-     * Update a TopLevelArmResource.
-     * 
-     * @param resourceGroupName The name of the resource group. The name is case insensitive.
-     * @param topLevelArmResourceName arm resource name for path.
-     * @param properties The resource properties to be updated.
-     * @throws IllegalArgumentException thrown if parameters fail the validation.
-     * @throws ManagementException thrown if the request is rejected by server.
+     * @throws HttpResponseException thrown if the service returns an error.
      * @throws RuntimeException all other wrapped checked exceptions if the request fails to be sent.
      * @return concrete tracked resource types can be created by aliasing this type using a specific property type.
      */
-    @ServiceMethod(returns = ReturnType.SINGLE)
     public TopLevelArmResourceInner update(String resourceGroupName, String topLevelArmResourceName,
         TopLevelArmResourceTagsUpdate properties) {
         return updateAsync(resourceGroupName, topLevelArmResourceName, properties).block();
@@ -309,15 +211,13 @@ public final class TopLevelArmResourcesClientImpl implements TopLevelArmResource
      * @param resourceGroupName The name of the resource group. The name is case insensitive.
      * @param topLevelArmResourceName arm resource name for path.
      * @param properties The resource properties to be updated.
-     * @param context The context to associate with this operation.
      * @throws IllegalArgumentException thrown if parameters fail the validation.
-     * @throws ManagementException thrown if the request is rejected by server.
+     * @throws HttpResponseException thrown if the service returns an error.
      * @throws RuntimeException all other wrapped checked exceptions if the request fails to be sent.
      * @return concrete tracked resource types can be created by aliasing this type using a specific property type.
      */
-    @ServiceMethod(returns = ReturnType.SINGLE)
     public TopLevelArmResourceInner update(String resourceGroupName, String topLevelArmResourceName,
-        TopLevelArmResourceTagsUpdate properties, Context context) {
-        return updateAsync(resourceGroupName, topLevelArmResourceName, properties, context).block();
+        TopLevelArmResourceTagsUpdate properties) {
+        return updateAsync(resourceGroupName, topLevelArmResourceName, properties).block();
     }
 }

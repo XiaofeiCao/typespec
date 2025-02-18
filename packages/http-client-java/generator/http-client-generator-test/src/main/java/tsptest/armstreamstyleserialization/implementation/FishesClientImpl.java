@@ -4,29 +4,30 @@
 
 package tsptest.armstreamstyleserialization.implementation;
 
-import com.azure.core.annotation.BodyParam;
-import com.azure.core.annotation.ExpectedResponses;
-import com.azure.core.annotation.Get;
-import com.azure.core.annotation.HeaderParam;
-import com.azure.core.annotation.Headers;
-import com.azure.core.annotation.Host;
-import com.azure.core.annotation.HostParam;
-import com.azure.core.annotation.Put;
-import com.azure.core.annotation.ReturnType;
-import com.azure.core.annotation.ServiceInterface;
-import com.azure.core.annotation.ServiceMethod;
-import com.azure.core.annotation.UnexpectedResponseExceptionType;
-import com.azure.core.http.rest.Response;
-import com.azure.core.http.rest.RestProxy;
-import com.azure.core.management.exception.ManagementException;
-import com.azure.core.util.Context;
-import com.azure.core.util.FluxUtil;
+import com.azure.v2.core.util.FluxUtil;
+import io.clientcore.core.annotations.Headers;
+import io.clientcore.core.annotations.ReturnType;
+import io.clientcore.core.annotations.ServiceInterface;
+import io.clientcore.core.annotations.ServiceMethod;
+import io.clientcore.core.http.RestProxy;
+import io.clientcore.core.http.annotations.BodyParam;
+import io.clientcore.core.http.annotations.HeaderParam;
+import io.clientcore.core.http.annotations.HostParam;
+import io.clientcore.core.http.annotations.HttpRequestInformation;
+import io.clientcore.core.http.annotations.UnexpectedResponseExceptionDetail;
+import io.clientcore.core.http.exceptions.HttpResponseException;
+import io.clientcore.core.http.models.HttpMethod;
+import io.clientcore.core.http.models.Response;
+import io.clientcore.core.http.pipeline.HttpPipeline;
+import io.clientcore.core.serialization.ObjectSerializer;
+import io.clientcore.core.utils.Context;
+import java.lang.reflect.InvocationTargetException;
 import reactor.core.publisher.Mono;
 import tsptest.armstreamstyleserialization.fluent.FishesClient;
 import tsptest.armstreamstyleserialization.fluent.models.FishInner;
 import tsptest.armstreamstyleserialization.fluent.models.OutputOnlyModelInner;
-import tsptest.armstreamstyleserialization.models.ErrorException;
-import tsptest.armstreamstyleserialization.models.ErrorMinException;
+import tsptest.armstreamstyleserialization.models.Error;
+import tsptest.armstreamstyleserialization.models.ErrorMin;
 
 /**
  * An instance of this class provides access to all the operations defined in FishesClient.
@@ -48,7 +49,7 @@ public final class FishesClientImpl implements FishesClient {
      * @param client the instance of the service client containing this operation class.
      */
     FishesClientImpl(ArmStreamStyleSerializationClientImpl client) {
-        this.service = RestProxy.create(FishesService.class, client.getHttpPipeline(), client.getSerializerAdapter());
+        this.service = RestProxy.create(FishesService.class, client.getHttpPipeline());
         this.client = client;
     }
 
@@ -56,38 +57,46 @@ public final class FishesClientImpl implements FishesClient {
      * The interface defining all the services for ArmStreamStyleSerializationClientFishes to be used by the proxy
      * service to perform REST calls.
      */
-    @Host("{endpoint}")
-    @ServiceInterface(name = "ArmStreamStyleSerial")
+    @ServiceInterface(name = "ArmStreamStyleSerial", host = "{endpoint}")
     public interface FishesService {
-        @Headers({ "Content-Type: application/json" })
-        @Get("/model")
-        @ExpectedResponses({ 200 })
-        @UnexpectedResponseExceptionType(ErrorException.class)
-        Mono<Response<FishInner>> getModel(@HostParam("endpoint") String endpoint, @HeaderParam("Accept") String accept,
-            Context context);
+        static FishesService getNewInstance(HttpPipeline pipeline, ObjectSerializer serializer) {
+            try {
+                Class<?> clazz = Class.forName("tsptest.armstreamstyleserialization.implementation.FishesServiceImpl");
+                return (FishesService) clazz.getMethod("getNewInstance", HttpPipeline.class, ObjectSerializer.class)
+                    .invoke(null, pipeline, serializer);
+            } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException
+                | InvocationTargetException e) {
+                throw new RuntimeException(e);
+            }
 
-        @Put("/model")
-        @ExpectedResponses({ 200 })
-        @UnexpectedResponseExceptionType(ErrorMinException.class)
+        }
+
+        @Headers({ "Content-Type: application/json" })
+        @HttpRequestInformation(method = HttpMethod.GET, path = "/model", expectedStatusCodes = { 200 })
+        @UnexpectedResponseExceptionDetail(exceptionBodyClass = Error.class)
+        Mono<Response<FishInner>> getModel(@HostParam("endpoint") String endpoint,
+            @HeaderParam("Accept") String accept);
+
+        @HttpRequestInformation(method = HttpMethod.PUT, path = "/model", expectedStatusCodes = { 200 })
+        @UnexpectedResponseExceptionDetail(exceptionBodyClass = ErrorMin.class)
         Mono<Response<FishInner>> putModel(@HostParam("endpoint") String endpoint,
             @HeaderParam("Content-Type") String contentType, @HeaderParam("Accept") String accept,
-            @BodyParam("application/json") FishInner fish, Context context);
+            @BodyParam("application/json") FishInner fish);
 
         @Headers({ "Content-Type: application/json" })
-        @Get("/model/output")
-        @ExpectedResponses({ 200 })
-        @UnexpectedResponseExceptionType(ManagementException.class)
+        @HttpRequestInformation(method = HttpMethod.GET, path = "/model/output", expectedStatusCodes = { 200 })
+        @UnexpectedResponseExceptionDetail
         Mono<Response<OutputOnlyModelInner>> getOutputOnlyModel(@HostParam("endpoint") String endpoint,
-            @HeaderParam("Accept") String accept, Context context);
+            @HeaderParam("Accept") String accept);
     }
 
     /**
      * The getModel operation.
      * 
-     * @throws ErrorException thrown if the request is rejected by server.
+     * @throws HttpResponseException thrown if the service returns an error.
      * @throws RuntimeException all other wrapped checked exceptions if the request fails to be sent.
-     * @return this is base model for polymorphic multiple levels inheritance with a discriminator along with
-     * {@link Response} on successful completion of {@link Mono}.
+     * @return this is base model for polymorphic multiple levels inheritance with a discriminator on successful
+     * completion of {@link Mono}.
      */
     @ServiceMethod(returns = ReturnType.SINGLE)
     private Mono<Response<FishInner>> getModelWithResponseAsync() {
@@ -96,40 +105,18 @@ public final class FishesClientImpl implements FishesClient {
                 new IllegalArgumentException("Parameter this.client.getEndpoint() is required and cannot be null."));
         }
         final String accept = "application/json";
-        return FluxUtil.withContext(context -> service.getModel(this.client.getEndpoint(), accept, context))
+        return FluxUtil.withContext(context -> service.getModel(this.client.getEndpoint(), accept))
             .contextWrite(context -> context.putAll(FluxUtil.toReactorContext(this.client.getContext()).readOnly()));
     }
 
     /**
      * The getModel operation.
      * 
-     * @param context The context to associate with this operation.
-     * @throws IllegalArgumentException thrown if parameters fail the validation.
-     * @throws ErrorException thrown if the request is rejected by server.
-     * @throws RuntimeException all other wrapped checked exceptions if the request fails to be sent.
-     * @return this is base model for polymorphic multiple levels inheritance with a discriminator along with
-     * {@link Response} on successful completion of {@link Mono}.
-     */
-    @ServiceMethod(returns = ReturnType.SINGLE)
-    private Mono<Response<FishInner>> getModelWithResponseAsync(Context context) {
-        if (this.client.getEndpoint() == null) {
-            return Mono.error(
-                new IllegalArgumentException("Parameter this.client.getEndpoint() is required and cannot be null."));
-        }
-        final String accept = "application/json";
-        context = this.client.mergeContext(context);
-        return service.getModel(this.client.getEndpoint(), accept, context);
-    }
-
-    /**
-     * The getModel operation.
-     * 
-     * @throws ErrorException thrown if the request is rejected by server.
+     * @throws HttpResponseException thrown if the service returns an error.
      * @throws RuntimeException all other wrapped checked exceptions if the request fails to be sent.
      * @return this is base model for polymorphic multiple levels inheritance with a discriminator on successful
      * completion of {@link Mono}.
      */
-    @ServiceMethod(returns = ReturnType.SINGLE)
     private Mono<FishInner> getModelAsync() {
         return getModelWithResponseAsync().flatMap(res -> Mono.justOrEmpty(res.getValue()));
     }
@@ -137,28 +124,23 @@ public final class FishesClientImpl implements FishesClient {
     /**
      * The getModel operation.
      * 
-     * @param context The context to associate with this operation.
-     * @throws IllegalArgumentException thrown if parameters fail the validation.
-     * @throws ErrorException thrown if the request is rejected by server.
+     * @throws HttpResponseException thrown if the service returns an error.
      * @throws RuntimeException all other wrapped checked exceptions if the request fails to be sent.
-     * @return this is base model for polymorphic multiple levels inheritance with a discriminator along with
-     * {@link Response}.
+     * @return this is base model for polymorphic multiple levels inheritance with a discriminator.
      */
-    @ServiceMethod(returns = ReturnType.SINGLE)
-    public Response<FishInner> getModelWithResponse(Context context) {
-        return getModelWithResponseAsync(context).block();
+    public Response<FishInner> getModelWithResponse() {
+        return getModelWithResponseAsync().block();
     }
 
     /**
      * The getModel operation.
      * 
-     * @throws ErrorException thrown if the request is rejected by server.
+     * @throws HttpResponseException thrown if the service returns an error.
      * @throws RuntimeException all other wrapped checked exceptions if the request fails to be sent.
      * @return this is base model for polymorphic multiple levels inheritance with a discriminator.
      */
-    @ServiceMethod(returns = ReturnType.SINGLE)
     public FishInner getModel() {
-        return getModelWithResponse(Context.NONE).getValue();
+        return getModelWithResponse(Context.none()).getValue();
     }
 
     /**
@@ -166,10 +148,10 @@ public final class FishesClientImpl implements FishesClient {
      * 
      * @param fish The fish parameter.
      * @throws IllegalArgumentException thrown if parameters fail the validation.
-     * @throws ErrorMinException thrown if the request is rejected by server.
+     * @throws HttpResponseException thrown if the service returns an error.
      * @throws RuntimeException all other wrapped checked exceptions if the request fails to be sent.
-     * @return this is base model for polymorphic multiple levels inheritance with a discriminator along with
-     * {@link Response} on successful completion of {@link Mono}.
+     * @return this is base model for polymorphic multiple levels inheritance with a discriminator on successful
+     * completion of {@link Mono}.
      */
     @ServiceMethod(returns = ReturnType.SINGLE)
     private Mono<Response<FishInner>> putModelWithResponseAsync(FishInner fish) {
@@ -184,8 +166,7 @@ public final class FishesClientImpl implements FishesClient {
         }
         final String contentType = "application/json";
         final String accept = "application/json";
-        return FluxUtil
-            .withContext(context -> service.putModel(this.client.getEndpoint(), contentType, accept, fish, context))
+        return FluxUtil.withContext(context -> service.putModel(this.client.getEndpoint(), contentType, accept, fish))
             .contextWrite(context -> context.putAll(FluxUtil.toReactorContext(this.client.getContext()).readOnly()));
     }
 
@@ -193,41 +174,12 @@ public final class FishesClientImpl implements FishesClient {
      * The putModel operation.
      * 
      * @param fish The fish parameter.
-     * @param context The context to associate with this operation.
      * @throws IllegalArgumentException thrown if parameters fail the validation.
-     * @throws ErrorMinException thrown if the request is rejected by server.
-     * @throws RuntimeException all other wrapped checked exceptions if the request fails to be sent.
-     * @return this is base model for polymorphic multiple levels inheritance with a discriminator along with
-     * {@link Response} on successful completion of {@link Mono}.
-     */
-    @ServiceMethod(returns = ReturnType.SINGLE)
-    private Mono<Response<FishInner>> putModelWithResponseAsync(FishInner fish, Context context) {
-        if (this.client.getEndpoint() == null) {
-            return Mono.error(
-                new IllegalArgumentException("Parameter this.client.getEndpoint() is required and cannot be null."));
-        }
-        if (fish == null) {
-            return Mono.error(new IllegalArgumentException("Parameter fish is required and cannot be null."));
-        } else {
-            fish.validate();
-        }
-        final String contentType = "application/json";
-        final String accept = "application/json";
-        context = this.client.mergeContext(context);
-        return service.putModel(this.client.getEndpoint(), contentType, accept, fish, context);
-    }
-
-    /**
-     * The putModel operation.
-     * 
-     * @param fish The fish parameter.
-     * @throws IllegalArgumentException thrown if parameters fail the validation.
-     * @throws ErrorMinException thrown if the request is rejected by server.
+     * @throws HttpResponseException thrown if the service returns an error.
      * @throws RuntimeException all other wrapped checked exceptions if the request fails to be sent.
      * @return this is base model for polymorphic multiple levels inheritance with a discriminator on successful
      * completion of {@link Mono}.
      */
-    @ServiceMethod(returns = ReturnType.SINGLE)
     private Mono<FishInner> putModelAsync(FishInner fish) {
         return putModelWithResponseAsync(fish).flatMap(res -> Mono.justOrEmpty(res.getValue()));
     }
@@ -236,16 +188,13 @@ public final class FishesClientImpl implements FishesClient {
      * The putModel operation.
      * 
      * @param fish The fish parameter.
-     * @param context The context to associate with this operation.
      * @throws IllegalArgumentException thrown if parameters fail the validation.
-     * @throws ErrorMinException thrown if the request is rejected by server.
+     * @throws HttpResponseException thrown if the service returns an error.
      * @throws RuntimeException all other wrapped checked exceptions if the request fails to be sent.
-     * @return this is base model for polymorphic multiple levels inheritance with a discriminator along with
-     * {@link Response}.
+     * @return this is base model for polymorphic multiple levels inheritance with a discriminator.
      */
-    @ServiceMethod(returns = ReturnType.SINGLE)
-    public Response<FishInner> putModelWithResponse(FishInner fish, Context context) {
-        return putModelWithResponseAsync(fish, context).block();
+    public Response<FishInner> putModelWithResponse(FishInner fish) {
+        return putModelWithResponseAsync(fish).block();
     }
 
     /**
@@ -253,22 +202,20 @@ public final class FishesClientImpl implements FishesClient {
      * 
      * @param fish The fish parameter.
      * @throws IllegalArgumentException thrown if parameters fail the validation.
-     * @throws ErrorMinException thrown if the request is rejected by server.
+     * @throws HttpResponseException thrown if the service returns an error.
      * @throws RuntimeException all other wrapped checked exceptions if the request fails to be sent.
      * @return this is base model for polymorphic multiple levels inheritance with a discriminator.
      */
-    @ServiceMethod(returns = ReturnType.SINGLE)
     public FishInner putModel(FishInner fish) {
-        return putModelWithResponse(fish, Context.NONE).getValue();
+        return putModelWithResponse(fish, Context.none()).getValue();
     }
 
     /**
      * The getOutputOnlyModel operation.
      * 
-     * @throws ManagementException thrown if the request is rejected by server.
+     * @throws HttpResponseException thrown if the service returns an error.
      * @throws RuntimeException all other wrapped checked exceptions if the request fails to be sent.
-     * @return this is base model for polymorphic OutputOnlyModel along with {@link Response} on successful completion
-     * of {@link Mono}.
+     * @return this is base model for polymorphic OutputOnlyModel on successful completion of {@link Mono}.
      */
     @ServiceMethod(returns = ReturnType.SINGLE)
     private Mono<Response<OutputOnlyModelInner>> getOutputOnlyModelWithResponseAsync() {
@@ -277,39 +224,17 @@ public final class FishesClientImpl implements FishesClient {
                 new IllegalArgumentException("Parameter this.client.getEndpoint() is required and cannot be null."));
         }
         final String accept = "application/json";
-        return FluxUtil.withContext(context -> service.getOutputOnlyModel(this.client.getEndpoint(), accept, context))
+        return FluxUtil.withContext(context -> service.getOutputOnlyModel(this.client.getEndpoint(), accept))
             .contextWrite(context -> context.putAll(FluxUtil.toReactorContext(this.client.getContext()).readOnly()));
     }
 
     /**
      * The getOutputOnlyModel operation.
      * 
-     * @param context The context to associate with this operation.
-     * @throws IllegalArgumentException thrown if parameters fail the validation.
-     * @throws ManagementException thrown if the request is rejected by server.
-     * @throws RuntimeException all other wrapped checked exceptions if the request fails to be sent.
-     * @return this is base model for polymorphic OutputOnlyModel along with {@link Response} on successful completion
-     * of {@link Mono}.
-     */
-    @ServiceMethod(returns = ReturnType.SINGLE)
-    private Mono<Response<OutputOnlyModelInner>> getOutputOnlyModelWithResponseAsync(Context context) {
-        if (this.client.getEndpoint() == null) {
-            return Mono.error(
-                new IllegalArgumentException("Parameter this.client.getEndpoint() is required and cannot be null."));
-        }
-        final String accept = "application/json";
-        context = this.client.mergeContext(context);
-        return service.getOutputOnlyModel(this.client.getEndpoint(), accept, context);
-    }
-
-    /**
-     * The getOutputOnlyModel operation.
-     * 
-     * @throws ManagementException thrown if the request is rejected by server.
+     * @throws HttpResponseException thrown if the service returns an error.
      * @throws RuntimeException all other wrapped checked exceptions if the request fails to be sent.
      * @return this is base model for polymorphic OutputOnlyModel on successful completion of {@link Mono}.
      */
-    @ServiceMethod(returns = ReturnType.SINGLE)
     private Mono<OutputOnlyModelInner> getOutputOnlyModelAsync() {
         return getOutputOnlyModelWithResponseAsync().flatMap(res -> Mono.justOrEmpty(res.getValue()));
     }
@@ -317,26 +242,22 @@ public final class FishesClientImpl implements FishesClient {
     /**
      * The getOutputOnlyModel operation.
      * 
-     * @param context The context to associate with this operation.
-     * @throws IllegalArgumentException thrown if parameters fail the validation.
-     * @throws ManagementException thrown if the request is rejected by server.
+     * @throws HttpResponseException thrown if the service returns an error.
      * @throws RuntimeException all other wrapped checked exceptions if the request fails to be sent.
-     * @return this is base model for polymorphic OutputOnlyModel along with {@link Response}.
+     * @return this is base model for polymorphic OutputOnlyModel.
      */
-    @ServiceMethod(returns = ReturnType.SINGLE)
-    public Response<OutputOnlyModelInner> getOutputOnlyModelWithResponse(Context context) {
-        return getOutputOnlyModelWithResponseAsync(context).block();
+    public Response<OutputOnlyModelInner> getOutputOnlyModelWithResponse() {
+        return getOutputOnlyModelWithResponseAsync().block();
     }
 
     /**
      * The getOutputOnlyModel operation.
      * 
-     * @throws ManagementException thrown if the request is rejected by server.
+     * @throws HttpResponseException thrown if the service returns an error.
      * @throws RuntimeException all other wrapped checked exceptions if the request fails to be sent.
      * @return this is base model for polymorphic OutputOnlyModel.
      */
-    @ServiceMethod(returns = ReturnType.SINGLE)
     public OutputOnlyModelInner getOutputOnlyModel() {
-        return getOutputOnlyModelWithResponse(Context.NONE).getValue();
+        return getOutputOnlyModelWithResponse(Context.none()).getValue();
     }
 }

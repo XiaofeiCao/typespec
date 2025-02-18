@@ -4,10 +4,10 @@
 
 package tsptest.armstreamstyleserialization.implementation;
 
-import com.azure.core.http.rest.Response;
-import com.azure.core.http.rest.SimpleResponse;
-import com.azure.core.util.Context;
-import com.azure.core.util.logging.ClientLogger;
+import com.azure.v2.core.http.rest.SimpleResponse;
+import io.clientcore.core.http.SimpleResponse;
+import io.clientcore.core.http.models.Response;
+import io.clientcore.core.instrumentation.logging.ClientLogger;
 import tsptest.armstreamstyleserialization.fluent.FunctionsClient;
 import tsptest.armstreamstyleserialization.fluent.models.FunctionInner;
 import tsptest.armstreamstyleserialization.models.Function;
@@ -26,8 +26,8 @@ public final class FunctionsImpl implements Functions {
         this.serviceManager = serviceManager;
     }
 
-    public Response<Function> createFunctionWithResponse(FunctionInner function, Context context) {
-        Response<FunctionInner> inner = this.serviceClient().createFunctionWithResponse(function, context);
+    public Response<Function> createFunctionWithResponse(FunctionInner function) {
+        Response<FunctionInner> inner = this.serviceClient().createFunctionWithResponse(function);
         if (inner != null) {
             return new SimpleResponse<>(inner.getRequest(), inner.getStatusCode(), inner.getHeaders(),
                 new FunctionImpl(inner.getValue(), this.manager()));

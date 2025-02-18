@@ -4,43 +4,78 @@
 
 package tsptest.armstreamstyleserialization.models;
 
-import com.azure.core.util.ExpandableStringEnum;
+import io.clientcore.core.utils.ExpandableEnum;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
 
 /**
  * extensible enum type for discriminator.
  */
-public final class DogKind extends ExpandableStringEnum<DogKind> {
+public final class DogKind implements ExpandableEnum<String> {
+    private static final Map<String, DogKind> VALUES = new ConcurrentHashMap<>();
+
+    private static final Function<String, DogKind> NEW_INSTANCE = DogKind::new;
+
     /**
      * Species golden.
      */
-    public static final DogKind GOLDEN = fromString("golden");
+    public static final DogKind GOLDEN = fromValue("golden");
 
-    /**
-     * Creates a new instance of DogKind value.
-     * 
-     * @deprecated Use the {@link #fromString(String)} factory method.
-     */
-    @Deprecated
-    public DogKind() {
+    private final String value;
+
+    private DogKind(String value) {
+        this.value = value;
     }
 
     /**
-     * Creates or finds a DogKind from its string representation.
+     * Creates or finds a DogKind.
      * 
-     * @param name a name to look for.
+     * @param value a value to look for.
      * @return the corresponding DogKind.
+     * @throws IllegalArgumentException if value is null.
      */
-    public static DogKind fromString(String name) {
-        return fromString(name, DogKind.class);
+    public static DogKind fromValue(String value) {
+        if (value == null) {
+            throw new IllegalArgumentException("'value' cannot be null.");
+        }
+        return VALUES.computeIfAbsent(value, NEW_INSTANCE);
     }
 
     /**
      * Gets known DogKind values.
      * 
-     * @return known DogKind values.
+     * @return Known DogKind values.
      */
     public static Collection<DogKind> values() {
-        return values(DogKind.class);
+        return new ArrayList<>(VALUES.values());
+    }
+
+    /**
+     * Gets the value of the DogKind instance.
+     * 
+     * @return the value of the DogKind instance.
+     */
+    @Override
+    public String getValue() {
+        return this.value;
+    }
+
+    @Override
+    public String toString() {
+        return Objects.toString(this.value);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return this == obj;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(this.value);
     }
 }

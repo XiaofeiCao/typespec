@@ -4,14 +4,10 @@
 
 package tsptest.armstreamstyleserialization.implementation;
 
-import com.azure.core.annotation.ServiceClientBuilder;
-import com.azure.core.http.HttpPipeline;
-import com.azure.core.http.HttpPipelineBuilder;
-import com.azure.core.http.policy.RetryPolicy;
-import com.azure.core.http.policy.UserAgentPolicy;
-import com.azure.core.management.AzureEnvironment;
-import com.azure.core.management.serializer.SerializerFactory;
-import com.azure.core.util.serializer.SerializerAdapter;
+import com.azure.v2.core.management.AzureEnvironment;
+import io.clientcore.core.annotations.ServiceClientBuilder;
+import io.clientcore.core.http.pipeline.HttpPipeline;
+import io.clientcore.core.http.pipeline.HttpPipelineBuilder;
 import java.time.Duration;
 
 /**
@@ -99,22 +95,6 @@ public final class ArmStreamStyleSerializationClientBuilder {
         return this;
     }
 
-    /*
-     * The serializer to serialize an object into a string
-     */
-    private SerializerAdapter serializerAdapter;
-
-    /**
-     * Sets The serializer to serialize an object into a string.
-     * 
-     * @param serializerAdapter the serializerAdapter value.
-     * @return the ArmStreamStyleSerializationClientBuilder.
-     */
-    public ArmStreamStyleSerializationClientBuilder serializerAdapter(SerializerAdapter serializerAdapter) {
-        this.serializerAdapter = serializerAdapter;
-        return this;
-    }
-
     /**
      * Builds an instance of ArmStreamStyleSerializationClientImpl with the provided parameters.
      * 
@@ -128,11 +108,8 @@ public final class ArmStreamStyleSerializationClientBuilder {
             : new HttpPipelineBuilder().policies(new UserAgentPolicy(), new RetryPolicy()).build();
         Duration localDefaultPollInterval
             = (defaultPollInterval != null) ? defaultPollInterval : Duration.ofSeconds(30);
-        SerializerAdapter localSerializerAdapter = (serializerAdapter != null)
-            ? serializerAdapter
-            : SerializerFactory.createDefaultManagementSerializerAdapter();
-        ArmStreamStyleSerializationClientImpl client = new ArmStreamStyleSerializationClientImpl(localPipeline,
-            localSerializerAdapter, localDefaultPollInterval, localEnvironment, localEndpoint, this.subscriptionId);
+        ArmStreamStyleSerializationClientImpl client
+            = new ArmStreamStyleSerializationClientImpl(localPipeline, localEndpoint, this.subscriptionId);
         return client;
     }
 }

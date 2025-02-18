@@ -52,6 +52,9 @@ public class TypeSpecFluentPlugin extends FluentGen {
         if (emitterOptions.getPackageVersion() != null) {
             SETTINGS_MAP.put("package-version", emitterOptions.getPackageVersion());
         }
+        if (emitterOptions.getFlavor() != null) {
+            SETTINGS_MAP.put("flavor", emitterOptions.getFlavor());
+        }
         SETTINGS_MAP.put("sdk-integration", sdkIntegration);
         SETTINGS_MAP.put("output-model-immutable", true);
         SETTINGS_MAP.put("uuid-as-string", true);

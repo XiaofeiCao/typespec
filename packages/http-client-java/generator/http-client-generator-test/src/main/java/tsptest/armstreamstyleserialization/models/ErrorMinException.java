@@ -4,8 +4,8 @@
 
 package tsptest.armstreamstyleserialization.models;
 
-import com.azure.core.http.HttpResponse;
-import com.azure.core.management.exception.ManagementException;
+import com.azure.v2.core.management.exception.ManagementException;
+import io.clientcore.core.http.models.HttpResponse;
 
 /**
  * Exception thrown for an invalid response with ErrorMin information.

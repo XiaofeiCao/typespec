@@ -4,12 +4,11 @@
 
 package tsptest.armstreamstyleserialization.implementation;
 
-import com.azure.core.util.Context;
-import com.azure.core.util.logging.ClientLogger;
+import azure.resourcemanager.foundations.models.TopLevelArmResourceTagsUpdate;
+import io.clientcore.core.instrumentation.logging.ClientLogger;
 import tsptest.armstreamstyleserialization.fluent.TopLevelArmResourcesClient;
 import tsptest.armstreamstyleserialization.fluent.models.TopLevelArmResourceInner;
 import tsptest.armstreamstyleserialization.models.TopLevelArmResource;
-import tsptest.armstreamstyleserialization.models.TopLevelArmResourceTagsUpdate;
 import tsptest.armstreamstyleserialization.models.TopLevelArmResources;
 
 public final class TopLevelArmResourcesImpl implements TopLevelArmResources {
@@ -37,9 +36,9 @@ public final class TopLevelArmResourcesImpl implements TopLevelArmResources {
     }
 
     public TopLevelArmResource update(String resourceGroupName, String topLevelArmResourceName,
-        TopLevelArmResourceTagsUpdate properties, Context context) {
+        TopLevelArmResourceTagsUpdate properties) {
         TopLevelArmResourceInner inner
-            = this.serviceClient().update(resourceGroupName, topLevelArmResourceName, properties, context);
+            = this.serviceClient().update(resourceGroupName, topLevelArmResourceName, properties);
         if (inner != null) {
             return new TopLevelArmResourceImpl(inner, this.manager());
         } else {

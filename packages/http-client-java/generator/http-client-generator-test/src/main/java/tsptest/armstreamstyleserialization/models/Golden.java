@@ -4,16 +4,17 @@
 
 package tsptest.armstreamstyleserialization.models;
 
-import com.azure.core.annotation.Immutable;
-import com.azure.json.JsonReader;
-import com.azure.json.JsonToken;
-import com.azure.json.JsonWriter;
+import io.clientcore.core.annotations.Metadata;
+import io.clientcore.core.annotations.TypeConditions;
+import io.clientcore.core.serialization.json.JsonReader;
+import io.clientcore.core.serialization.json.JsonToken;
+import io.clientcore.core.serialization.json.JsonWriter;
 import java.io.IOException;
 
 /**
  * Golden dog model.
  */
-@Immutable
+@Metadata(conditions = { TypeConditions.IMMUTABLE })
 public final class Golden extends Dog {
     /*
      * discriminator property
@@ -52,7 +53,7 @@ public final class Golden extends Dog {
     public JsonWriter toJson(JsonWriter jsonWriter) throws IOException {
         jsonWriter.writeStartObject();
         jsonWriter.writeIntField("weight", weight());
-        jsonWriter.writeStringField("kind", this.kind == null ? null : this.kind.toString());
+        jsonWriter.writeStringField("kind", this.kind == null ? null : this.kind.getValue());
         return jsonWriter.writeEndObject();
     }
 
@@ -77,7 +78,7 @@ public final class Golden extends Dog {
                 } else if ("dna".equals(fieldName)) {
                     deserializedGolden.withDna(reader.getString());
                 } else if ("kind".equals(fieldName)) {
-                    deserializedGolden.kind = DogKind.fromString(reader.getString());
+                    deserializedGolden.kind = DogKind.fromValue(reader.getString());
                 } else {
                     reader.skipChildren();
                 }

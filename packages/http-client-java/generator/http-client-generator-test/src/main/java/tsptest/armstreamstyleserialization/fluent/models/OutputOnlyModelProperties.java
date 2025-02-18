@@ -4,19 +4,20 @@
 
 package tsptest.armstreamstyleserialization.fluent.models;
 
-import com.azure.core.annotation.Immutable;
-import com.azure.core.util.logging.ClientLogger;
-import com.azure.json.JsonReader;
-import com.azure.json.JsonSerializable;
-import com.azure.json.JsonToken;
-import com.azure.json.JsonWriter;
+import io.clientcore.core.annotations.Metadata;
+import io.clientcore.core.annotations.TypeConditions;
+import io.clientcore.core.instrumentation.logging.ClientLogger;
+import io.clientcore.core.serialization.json.JsonReader;
+import io.clientcore.core.serialization.json.JsonSerializable;
+import io.clientcore.core.serialization.json.JsonToken;
+import io.clientcore.core.serialization.json.JsonWriter;
 import java.io.IOException;
 import tsptest.armstreamstyleserialization.models.Dog;
 
 /**
  * The OutputOnlyModelProperties model.
  */
-@Immutable
+@Metadata(conditions = { TypeConditions.IMMUTABLE })
 public final class OutputOnlyModelProperties implements JsonSerializable<OutputOnlyModelProperties> {
     /*
      * The title property.

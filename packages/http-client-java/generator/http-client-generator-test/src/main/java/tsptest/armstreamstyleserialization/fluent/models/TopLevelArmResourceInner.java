@@ -4,12 +4,13 @@
 
 package tsptest.armstreamstyleserialization.fluent.models;
 
-import com.azure.core.annotation.Immutable;
-import com.azure.core.management.Resource;
-import com.azure.core.management.SystemData;
-import com.azure.json.JsonReader;
-import com.azure.json.JsonToken;
-import com.azure.json.JsonWriter;
+import com.azure.v2.core.management.Resource;
+import com.azure.v2.core.management.SystemData;
+import io.clientcore.core.annotations.Metadata;
+import io.clientcore.core.annotations.TypeConditions;
+import io.clientcore.core.serialization.json.JsonReader;
+import io.clientcore.core.serialization.json.JsonToken;
+import io.clientcore.core.serialization.json.JsonWriter;
 import java.io.IOException;
 import java.util.Map;
 import tsptest.armstreamstyleserialization.models.TopLevelArmResourceProperties;
@@ -17,7 +18,7 @@ import tsptest.armstreamstyleserialization.models.TopLevelArmResourceProperties;
 /**
  * Concrete tracked resource types can be created by aliasing this type using a specific property type.
  */
-@Immutable
+@Metadata(conditions = { TypeConditions.IMMUTABLE })
 public final class TopLevelArmResourceInner extends Resource {
     /*
      * The resource-specific properties for this resource.

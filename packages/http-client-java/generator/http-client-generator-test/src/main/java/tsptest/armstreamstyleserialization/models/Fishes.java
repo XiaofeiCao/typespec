@@ -4,8 +4,7 @@
 
 package tsptest.armstreamstyleserialization.models;
 
-import com.azure.core.http.rest.Response;
-import com.azure.core.util.Context;
+import io.clientcore.core.http.models.Response;
 import tsptest.armstreamstyleserialization.fluent.models.FishInner;
 
 /**
@@ -15,19 +14,16 @@ public interface Fishes {
     /**
      * The getModel operation.
      * 
-     * @param context The context to associate with this operation.
-     * @throws IllegalArgumentException thrown if parameters fail the validation.
-     * @throws tsptest.armstreamstyleserialization.models.ErrorException thrown if the request is rejected by server.
+     * @throws HttpResponseException thrown if the service returns an error.
      * @throws RuntimeException all other wrapped checked exceptions if the request fails to be sent.
-     * @return this is base model for polymorphic multiple levels inheritance with a discriminator along with
-     * {@link Response}.
+     * @return this is base model for polymorphic multiple levels inheritance with a discriminator.
      */
-    Response<Fish> getModelWithResponse(Context context);
+    Response<Fish> getModelWithResponse();
 
     /**
      * The getModel operation.
      * 
-     * @throws tsptest.armstreamstyleserialization.models.ErrorException thrown if the request is rejected by server.
+     * @throws HttpResponseException thrown if the service returns an error.
      * @throws RuntimeException all other wrapped checked exceptions if the request fails to be sent.
      * @return this is base model for polymorphic multiple levels inheritance with a discriminator.
      */
@@ -37,21 +33,19 @@ public interface Fishes {
      * The putModel operation.
      * 
      * @param fish The fish parameter.
-     * @param context The context to associate with this operation.
      * @throws IllegalArgumentException thrown if parameters fail the validation.
-     * @throws tsptest.armstreamstyleserialization.models.ErrorMinException thrown if the request is rejected by server.
+     * @throws HttpResponseException thrown if the service returns an error.
      * @throws RuntimeException all other wrapped checked exceptions if the request fails to be sent.
-     * @return this is base model for polymorphic multiple levels inheritance with a discriminator along with
-     * {@link Response}.
+     * @return this is base model for polymorphic multiple levels inheritance with a discriminator.
      */
-    Response<Fish> putModelWithResponse(FishInner fish, Context context);
+    Response<Fish> putModelWithResponse(FishInner fish);
 
     /**
      * The putModel operation.
      * 
      * @param fish The fish parameter.
      * @throws IllegalArgumentException thrown if parameters fail the validation.
-     * @throws tsptest.armstreamstyleserialization.models.ErrorMinException thrown if the request is rejected by server.
+     * @throws HttpResponseException thrown if the service returns an error.
      * @throws RuntimeException all other wrapped checked exceptions if the request fails to be sent.
      * @return this is base model for polymorphic multiple levels inheritance with a discriminator.
      */
@@ -60,18 +54,16 @@ public interface Fishes {
     /**
      * The getOutputOnlyModel operation.
      * 
-     * @param context The context to associate with this operation.
-     * @throws IllegalArgumentException thrown if parameters fail the validation.
-     * @throws com.azure.core.management.exception.ManagementException thrown if the request is rejected by server.
+     * @throws HttpResponseException thrown if the service returns an error.
      * @throws RuntimeException all other wrapped checked exceptions if the request fails to be sent.
-     * @return this is base model for polymorphic OutputOnlyModel along with {@link Response}.
+     * @return this is base model for polymorphic OutputOnlyModel.
      */
-    Response<OutputOnlyModel> getOutputOnlyModelWithResponse(Context context);
+    Response<OutputOnlyModel> getOutputOnlyModelWithResponse();
 
     /**
      * The getOutputOnlyModel operation.
      * 
-     * @throws com.azure.core.management.exception.ManagementException thrown if the request is rejected by server.
+     * @throws HttpResponseException thrown if the service returns an error.
      * @throws RuntimeException all other wrapped checked exceptions if the request fails to be sent.
      * @return this is base model for polymorphic OutputOnlyModel.
      */
