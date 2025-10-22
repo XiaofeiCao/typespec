@@ -73,7 +73,7 @@ public final class ExtensionsResourcesClientImpl implements ExtensionsResourcesC
     @ServiceInterface(name = "ResourcesClientExtensionsResources")
     public interface ExtensionsResourcesService {
         @Headers({ "Content-Type: application/json" })
-        @Get("/{resourceUri}/providers/Azure.ResourceManager.Resources/extensionsResources/{extensionsResourceName}")
+        @Get("{resourceUri}/providers/Azure.ResourceManager.Resources/extensionsResources/{extensionsResourceName}")
         @ExpectedResponses({ 200 })
         @UnexpectedResponseExceptionType(ManagementException.class)
         Mono<Response<ExtensionsResourceInner>> get(@HostParam("endpoint") String endpoint,
@@ -83,7 +83,7 @@ public final class ExtensionsResourcesClientImpl implements ExtensionsResourcesC
             Context context);
 
         @Headers({ "Content-Type: application/json" })
-        @Get("/{resourceUri}/providers/Azure.ResourceManager.Resources/extensionsResources/{extensionsResourceName}")
+        @Get("{resourceUri}/providers/Azure.ResourceManager.Resources/extensionsResources/{extensionsResourceName}")
         @ExpectedResponses({ 200 })
         @UnexpectedResponseExceptionType(ManagementException.class)
         Response<ExtensionsResourceInner> getSync(@HostParam("endpoint") String endpoint,
@@ -92,7 +92,7 @@ public final class ExtensionsResourcesClientImpl implements ExtensionsResourcesC
             @PathParam("extensionsResourceName") String extensionsResourceName, @HeaderParam("Accept") String accept,
             Context context);
 
-        @Put("/{resourceUri}/providers/Azure.ResourceManager.Resources/extensionsResources/{extensionsResourceName}")
+        @Put("{resourceUri}/providers/Azure.ResourceManager.Resources/extensionsResources/{extensionsResourceName}")
         @ExpectedResponses({ 200, 201 })
         @UnexpectedResponseExceptionType(ManagementException.class)
         Mono<Response<Flux<ByteBuffer>>> createOrUpdate(@HostParam("endpoint") String endpoint,
@@ -102,7 +102,7 @@ public final class ExtensionsResourcesClientImpl implements ExtensionsResourcesC
             @HeaderParam("Content-Type") String contentType, @HeaderParam("Accept") String accept,
             @BodyParam("application/json") ExtensionsResourceInner resource, Context context);
 
-        @Put("/{resourceUri}/providers/Azure.ResourceManager.Resources/extensionsResources/{extensionsResourceName}")
+        @Put("{resourceUri}/providers/Azure.ResourceManager.Resources/extensionsResources/{extensionsResourceName}")
         @ExpectedResponses({ 200, 201 })
         @UnexpectedResponseExceptionType(ManagementException.class)
         Response<BinaryData> createOrUpdateSync(@HostParam("endpoint") String endpoint,
@@ -112,7 +112,7 @@ public final class ExtensionsResourcesClientImpl implements ExtensionsResourcesC
             @HeaderParam("Content-Type") String contentType, @HeaderParam("Accept") String accept,
             @BodyParam("application/json") ExtensionsResourceInner resource, Context context);
 
-        @Patch("/{resourceUri}/providers/Azure.ResourceManager.Resources/extensionsResources/{extensionsResourceName}")
+        @Patch("{resourceUri}/providers/Azure.ResourceManager.Resources/extensionsResources/{extensionsResourceName}")
         @ExpectedResponses({ 200 })
         @UnexpectedResponseExceptionType(ManagementException.class)
         Mono<Response<ExtensionsResourceInner>> update(@HostParam("endpoint") String endpoint,
@@ -122,7 +122,7 @@ public final class ExtensionsResourcesClientImpl implements ExtensionsResourcesC
             @HeaderParam("Content-Type") String contentType, @HeaderParam("Accept") String accept,
             @BodyParam("application/json") ExtensionsResourceInner properties, Context context);
 
-        @Patch("/{resourceUri}/providers/Azure.ResourceManager.Resources/extensionsResources/{extensionsResourceName}")
+        @Patch("{resourceUri}/providers/Azure.ResourceManager.Resources/extensionsResources/{extensionsResourceName}")
         @ExpectedResponses({ 200 })
         @UnexpectedResponseExceptionType(ManagementException.class)
         Response<ExtensionsResourceInner> updateSync(@HostParam("endpoint") String endpoint,
@@ -133,7 +133,7 @@ public final class ExtensionsResourcesClientImpl implements ExtensionsResourcesC
             @BodyParam("application/json") ExtensionsResourceInner properties, Context context);
 
         @Headers({ "Accept: application/json;q=0.9", "Content-Type: application/json" })
-        @Delete("/{resourceUri}/providers/Azure.ResourceManager.Resources/extensionsResources/{extensionsResourceName}")
+        @Delete("{resourceUri}/providers/Azure.ResourceManager.Resources/extensionsResources/{extensionsResourceName}")
         @ExpectedResponses({ 200, 204 })
         @UnexpectedResponseExceptionType(ManagementException.class)
         Mono<Response<Void>> delete(@HostParam("endpoint") String endpoint,
@@ -142,7 +142,7 @@ public final class ExtensionsResourcesClientImpl implements ExtensionsResourcesC
             @PathParam("extensionsResourceName") String extensionsResourceName, Context context);
 
         @Headers({ "Accept: application/json;q=0.9", "Content-Type: application/json" })
-        @Delete("/{resourceUri}/providers/Azure.ResourceManager.Resources/extensionsResources/{extensionsResourceName}")
+        @Delete("{resourceUri}/providers/Azure.ResourceManager.Resources/extensionsResources/{extensionsResourceName}")
         @ExpectedResponses({ 200, 204 })
         @UnexpectedResponseExceptionType(ManagementException.class)
         Response<Void> deleteSync(@HostParam("endpoint") String endpoint, @QueryParam("api-version") String apiVersion,
@@ -150,7 +150,7 @@ public final class ExtensionsResourcesClientImpl implements ExtensionsResourcesC
             @PathParam("extensionsResourceName") String extensionsResourceName, Context context);
 
         @Headers({ "Content-Type: application/json" })
-        @Get("/{resourceUri}/providers/Azure.ResourceManager.Resources/extensionsResources")
+        @Get("{resourceUri}/providers/Azure.ResourceManager.Resources/extensionsResources")
         @ExpectedResponses({ 200 })
         @UnexpectedResponseExceptionType(ManagementException.class)
         Mono<Response<ExtensionsResourceListResult>> listByScope(@HostParam("endpoint") String endpoint,
@@ -159,7 +159,7 @@ public final class ExtensionsResourcesClientImpl implements ExtensionsResourcesC
             Context context);
 
         @Headers({ "Content-Type: application/json" })
-        @Get("/{resourceUri}/providers/Azure.ResourceManager.Resources/extensionsResources")
+        @Get("{resourceUri}/providers/Azure.ResourceManager.Resources/extensionsResources")
         @ExpectedResponses({ 200 })
         @UnexpectedResponseExceptionType(ManagementException.class)
         Response<ExtensionsResourceListResult> listByScopeSync(@HostParam("endpoint") String endpoint,
