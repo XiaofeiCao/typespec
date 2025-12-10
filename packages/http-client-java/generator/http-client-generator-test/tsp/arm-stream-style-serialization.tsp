@@ -35,6 +35,8 @@ model Fish {
 
   properties: FishProperties;
   anotherProperties: AnotherFishProperties;
+
+  clientDefault: int32;
 }
 
 @doc("The second level model in polymorphic multiple levels inheritance and it defines a new discriminator.")
@@ -355,3 +357,4 @@ model Encoded {
 @@flattenProperty(AnotherFishProperties.eyeProperties);
 @@flattenProperty(FunctionProperties.properties);
 @@flattenProperty(Result.data);
+@@clientDefaultValue(Fish.clientDefault, 30);

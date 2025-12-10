@@ -1497,6 +1497,7 @@ export class CodeModelBuilder {
           },
         },
         extensions: extensions,
+        clientDefaultValue: param.clientDefaultValue,
       });
       op.addParameter(parameter);
 
@@ -2864,6 +2865,7 @@ export class CodeModelBuilder {
       readOnly: this.isReadOnly(modelProperty),
       serializedName: getPropertySerializedName(modelProperty),
       extensions: extensions,
+      clientDefaultValue: modelProperty.clientDefaultValue,
     });
 
     // xml
