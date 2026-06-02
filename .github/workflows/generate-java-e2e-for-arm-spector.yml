@@ -1,0 +1,469 @@
+name: Generate Java e2e test for ARM Spector
+
+# Manually-dispatched workflow that, given an open ARM Spector PR in
+# Azure/typespec-azure and optionally an open PR in this repo, generates
+# (or updates) the corresponding Java e2e test cases under
+# packages/http-client-java/generator/http-client-generator-test/.
+#
+# Required secrets (all already used by other workflows in this repo):
+#   - COPILOT_GITHUB_TOKEN: token used by the GitHub Copilot CLI agent step.
+#   - GH_AW_GITHUB_TOKEN (optional, falls back to GITHUB_TOKEN): used as GH_TOKEN
+#     for `gh` calls and for pushing branches / opening PRs. For pushing into a
+#     contributor's fork branch, GH_AW_GITHUB_TOKEN must have cross-repo write.
+
+on:
+  workflow_dispatch:
+    inputs:
+      typespec_azure_pr:
+        description: "PR number or URL in Azure/typespec-azure that adds an ARM Spector test"
+        required: true
+        type: string
+      typespec_pr:
+        description: "Optional PR number or URL in this repo to push results into; leave blank to open a new PR"
+        required: false
+        type: string
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  generate:
+    name: Generate Java e2e test
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      # GH_TOKEN is intentionally NOT set at the job level. Steps that need it
+      # supply it via env: so build/install steps that run untrusted Azure PR
+      # code don't have access to a write-scoped token.
+      AZURE_PR_INPUT: ${{ inputs.typespec_azure_pr }}
+      TYPESPEC_PR_INPUT: ${{ inputs.typespec_pr }}
+
+    steps:
+      # ---------------------------------------------------------------------
+      # 1) Checkout this repo (typespec) into ./typespec.
+      #    If a typespec PR was provided, we'll `gh pr checkout` it below.
+      # ---------------------------------------------------------------------
+      - name: Checkout typespec
+        uses: actions/checkout@v6
+        with:
+          path: typespec
+          fetch-depth: 0
+          # Keep credentials so we can push back to this repo.
+          persist-credentials: true
+          token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
+
+      - name: Resolve PR inputs
+        id: resolve
+        working-directory: typespec
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          # Parses either a PR URL (https://github.com/<owner>/<repo>/pull/<n>) or
+          # a bare PR number. For bare numbers we use $2 as the default repo slug.
+          extract_pr() {
+            local raw="$1"
+            local default_repo="$2"
+            if [[ -z "$raw" ]]; then
+              echo "||"
+              return
+            fi
+            if [[ "$raw" =~ ^https?://[^/]+/([^/]+)/([^/]+)/pull/([0-9]+) ]]; then
+              echo "${BASH_REMATCH[1]}/${BASH_REMATCH[2]}|${BASH_REMATCH[3]}"
+            elif [[ "$raw" =~ ^([0-9]+)$ ]]; then
+              echo "${default_repo}|${BASH_REMATCH[1]}"
+            else
+              echo "::error::Could not parse PR reference '$raw'. Use a full URL or a bare number." >&2
+              exit 1
+            fi
+          }
+
+          IFS='|' read -r AZURE_REPO AZURE_PR    <<< "$(extract_pr "$AZURE_PR_INPUT"    'Azure/typespec-azure')"
+          IFS='|' read -r TYPESPEC_REPO TYPESPEC_PR <<< "$(extract_pr "$TYPESPEC_PR_INPUT" "${{ github.repository }}")"
+
+          if [[ -z "$AZURE_PR" ]]; then
+            echo "::error::typespec_azure_pr is required"
+            exit 1
+          fi
+
+          echo "azure_repo=$AZURE_REPO"          >> "$GITHUB_OUTPUT"
+          echo "azure_pr=$AZURE_PR"              >> "$GITHUB_OUTPUT"
+          echo "typespec_repo=$TYPESPEC_REPO"    >> "$GITHUB_OUTPUT"
+          echo "typespec_pr=$TYPESPEC_PR"        >> "$GITHUB_OUTPUT"
+
+          echo "Azure PR:    $AZURE_REPO#$AZURE_PR"
+          if [[ -n "$TYPESPEC_PR" ]]; then
+            echo "Typespec PR: $TYPESPEC_REPO#$TYPESPEC_PR"
+          fi
+
+          # If a typespec PR was supplied, refuse to push to a fork branch since
+          # GITHUB_TOKEN / the default checkout token cannot write across repos.
+          # Also refuse if the typespec PR is in a different repo than the one
+          # the workflow is running in.
+          if [[ -n "$TYPESPEC_PR" ]]; then
+            if [[ "$TYPESPEC_REPO" != "${{ github.repository }}" ]]; then
+              echo "::error::typespec PR $TYPESPEC_REPO#$TYPESPEC_PR is in a different repo than this workflow ('${{ github.repository }}'). Re-run the workflow from that repo, or omit typespec_pr."
+              exit 1
+            fi
+            HEAD_REPO=$(gh pr view "$TYPESPEC_PR" --repo "${{ github.repository }}" --json headRepositoryOwner -q .headRepositoryOwner.login)
+            if [[ "$HEAD_REPO" != "${{ github.repository_owner }}" ]]; then
+              echo "::error::typespec PR #$TYPESPEC_PR is from fork '$HEAD_REPO'. Pushing across repos is not supported. Re-run without typespec_pr to open a new PR in this repo."
+              exit 1
+            fi
+          fi
+
+      - name: Checkout typespec PR branch (if provided)
+        if: steps.resolve.outputs.typespec_pr != ''
+        working-directory: typespec
+        env:
+          GH_TOKEN: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh pr checkout "${{ steps.resolve.outputs.typespec_pr }}" --repo "${{ github.repository }}"
+          echo "Checked out typespec PR #${{ steps.resolve.outputs.typespec_pr }} on branch $(git rev-parse --abbrev-ref HEAD)"
+
+      - name: Create working branch (no typespec PR provided)
+        if: steps.resolve.outputs.typespec_pr == ''
+        working-directory: typespec
+        shell: bash
+        run: |
+          set -euo pipefail
+          BRANCH="auto/java-e2e-arm-${{ steps.resolve.outputs.azure_pr }}-${{ github.run_id }}"
+          git checkout -b "$BRANCH"
+          echo "Created branch $BRANCH"
+          echo "WORK_BRANCH=$BRANCH" >> "$GITHUB_ENV"
+
+      # ---------------------------------------------------------------------
+      # 2) Toolchain.
+      # ---------------------------------------------------------------------
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: lts/*
+
+      - name: Setup Java (Temurin 17)
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      # Install root workspace deps; required by `npm run format` (which calls
+      # `pnpm -w format:dir`) and by `pnpm change add` (Chronus).
+      # http-client-java is excluded from pnpm-workspace.yaml so this does not
+      # interfere with the later `npm ci` inside that package.
+      - name: pnpm install (typespec workspace root)
+        working-directory: typespec
+        run: pnpm install
+
+      # ---------------------------------------------------------------------
+      # 3) Clone typespec-azure as a sibling and check out the Azure PR.
+      # ---------------------------------------------------------------------
+      - name: Clone typespec-azure & checkout PR
+        env:
+          GH_TOKEN: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh repo clone "${{ steps.resolve.outputs.azure_repo }}" typespec-azure -- --depth 200
+          cd typespec-azure
+          gh pr checkout "${{ steps.resolve.outputs.azure_pr }}" --repo "${{ steps.resolve.outputs.azure_repo }}"
+          echo "Azure PR head: $(git rev-parse --abbrev-ref HEAD) @ $(git rev-parse --short HEAD)"
+
+      # ---------------------------------------------------------------------
+      # 4) Detect changed ARM scenarios in the Azure PR (must run before we
+      #    rewrite anything so the diff is clean).
+      # ---------------------------------------------------------------------
+      - name: Detect changed ARM scenarios
+        id: scenarios
+        env:
+          GH_TOKEN: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
+        shell: pwsh
+        run: |
+          $json = & "${{ github.workspace }}/typespec/eng/scripts/Get-ChangedArmSpectorScenarios.ps1" `
+            -PrNumber "${{ steps.resolve.outputs.azure_pr }}" `
+            -RepoSlug "${{ steps.resolve.outputs.azure_repo }}" `
+            -TypespecAzureRoot "${{ github.workspace }}/typespec-azure"
+          Write-Host "Scenarios JSON: $json"
+          "scenarios_json=$json" >> $env:GITHUB_OUTPUT
+          # Build a multi-line list for the prompt template.
+          $items = $json | ConvertFrom-Json
+          if ($items -isnot [System.Array]) { $items = @($items) }
+          $list = ($items | ForEach-Object { "- $_" }) -join "`n"
+          "scenarios_list<<EOF" >> $env:GITHUB_OUTPUT
+          $list                  >> $env:GITHUB_OUTPUT
+          "EOF"                  >> $env:GITHUB_OUTPUT
+
+      - name: Fail if no ARM scenarios changed
+        if: steps.scenarios.outputs.scenarios_json == '[]'
+        shell: bash
+        run: |
+          echo "::error::PR ${{ steps.resolve.outputs.azure_repo }}#${{ steps.resolve.outputs.azure_pr }} does not change any files under packages/azure-http-specs/specs/azure/resource-manager/**"
+          exit 1
+
+      # ---------------------------------------------------------------------
+      # 5) Build typespec-azure & pack @azure-tools/azure-http-specs locally.
+      # ---------------------------------------------------------------------
+      - name: Install typespec-azure deps
+        working-directory: typespec-azure
+        run: pnpm install --frozen-lockfile=false
+
+      - name: Build typespec-azure
+        working-directory: typespec-azure
+        run: pnpm build
+
+      - name: Pack @azure-tools/azure-http-specs
+        id: pack
+        working-directory: typespec-azure/packages/azure-http-specs
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT_DIR="${RUNNER_TEMP}/azure-http-specs-tarball"
+          mkdir -p "$OUT_DIR"
+          pnpm pack --pack-destination "$OUT_DIR"
+          TARBALL_ABS=$(ls -1 "$OUT_DIR"/*.tgz | head -n 1)
+          test -f "$TARBALL_ABS"
+          echo "Tarball: $TARBALL_ABS"
+          echo "tarball=$TARBALL_ABS" >> "$GITHUB_OUTPUT"
+
+      # ---------------------------------------------------------------------
+      # 6) Point the Java test project at the local tarball and aligned overrides.
+      # ---------------------------------------------------------------------
+      - name: Patch http-client-generator-test/package.json
+        shell: pwsh
+        run: |
+          & "${{ github.workspace }}/typespec/eng/scripts/Patch-AzureHttpSpecsDependency.ps1" `
+            -PackageJson  "${{ github.workspace }}/typespec/packages/http-client-java/generator/http-client-generator-test/package.json" `
+            -TypespecAzureRoot   "${{ github.workspace }}/typespec-azure" `
+            -AzureHttpSpecsTarball "${{ steps.pack.outputs.tarball }}"
+
+      # ---------------------------------------------------------------------
+      # 7-8) Setup http-client-java env & regen spector test code.
+      # ---------------------------------------------------------------------
+      - name: Run Setup.ps1
+        working-directory: typespec/packages/http-client-java/generator/http-client-generator-test
+        shell: pwsh
+        run: ./Setup.ps1
+
+      - name: Run Generate.ps1
+        working-directory: typespec/packages/http-client-java/generator/http-client-generator-test
+        shell: pwsh
+        run: ./Generate.ps1
+
+      # ---------------------------------------------------------------------
+      # 9) Build the prompt and invoke the Copilot CLI agent to write the test.
+      # ---------------------------------------------------------------------
+      - name: Build agent prompt
+        id: prompt
+        shell: bash
+        env:
+          SCENARIO_LIST: ${{ steps.scenarios.outputs.scenarios_list }}
+          AZURE_REPO: ${{ steps.resolve.outputs.azure_repo }}
+          AZURE_PR: ${{ steps.resolve.outputs.azure_pr }}
+          TYPESPEC_PR: ${{ steps.resolve.outputs.typespec_pr }}
+          REPO_FULL: ${{ github.repository }}
+          WORKSPACE: ${{ github.workspace }}
+          PROMPT_OUT: ${{ runner.temp }}/agent-prompt.md
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import os
+          from pathlib import Path
+
+          template = Path("typespec/.github/copilot-prompts/java-e2e-arm-spector.md").read_text()
+          rendered = template.replace("{{SCENARIO_LIST}}", os.environ["SCENARIO_LIST"])
+
+          azure_repo  = os.environ["AZURE_REPO"]
+          azure_pr    = os.environ["AZURE_PR"]
+          typespec_pr = os.environ.get("TYPESPEC_PR", "")
+          repo        = os.environ["REPO_FULL"]
+          ws          = os.environ["WORKSPACE"]
+
+          rendered += "\n\n## Trigger context\n\n"
+          rendered += f"- typespec-azure PR: https://github.com/{azure_repo}/pull/{azure_pr}\n"
+          if typespec_pr:
+              rendered += f"- typespec PR (target): https://github.com/{repo}/pull/{typespec_pr}\n"
+          rendered += f"- typespec checkout: `{ws}/typespec`\n"
+          rendered += f"- typespec-azure checkout: `{ws}/typespec-azure`\n"
+
+          out = Path(os.environ["PROMPT_OUT"])
+          out.write_text(rendered)
+          PY
+          echo "prompt_file=${PROMPT_OUT}" >> "$GITHUB_OUTPUT"
+          echo "----- Rendered prompt -----"
+          cat "$PROMPT_OUT"
+          echo "----- /Rendered prompt -----"
+
+      - name: Install GitHub Copilot CLI
+        run: npm install -g @github/copilot@latest
+
+      - name: Run Copilot CLI agent
+        id: agent
+        working-directory: typespec
+        env:
+          COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          PROMPT="$(cat '${{ steps.prompt.outputs.prompt_file }}')"
+          # Grant access to the sibling typespec-azure checkout as well as the
+          # typespec workspace (cwd). --allow-all-tools is required for the
+          # agent to read files and write the new test class non-interactively.
+          copilot \
+            --no-color \
+            --add-dir "${{ github.workspace }}" \
+            --add-dir "${{ github.workspace }}/typespec-azure" \
+            --allow-all-tools \
+            -p "$PROMPT" \
+            | tee "${RUNNER_TEMP}/copilot-output.log"
+
+      - name: Guard against unauthorized edits
+        working-directory: typespec
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Allowed: test sources, generated sources (regen artifacts), and the
+          # patched package.json (which we will revert below).
+          ALLOWED_REGEX='^(packages/http-client-java/generator/http-client-generator-test/src/(test|main)/java/|packages/http-client-java/generator/http-client-generator-test/package\.json(\.bak)?$|packages/http-client-java/generator/http-client-generator-test/src/main/resources/)'
+          UNEXPECTED=$(git status --porcelain | awk '{print $2}' | grep -Ev "$ALLOWED_REGEX" || true)
+          if [[ -n "$UNEXPECTED" ]]; then
+            echo "::error::Copilot agent (or regen) touched files outside the allowlist:"
+            echo "$UNEXPECTED"
+            exit 1
+          fi
+
+      # ---------------------------------------------------------------------
+      # 10) Verify with mvn + Spector.
+      # ---------------------------------------------------------------------
+      - name: mvn clean compile
+        working-directory: typespec/packages/http-client-java/generator/http-client-generator-test
+        run: mvn -B -ntp clean compile
+
+      - name: Start Spector server
+        working-directory: typespec/packages/http-client-java/generator/http-client-generator-test
+        run: npm run spector-start
+
+      - name: mvn test
+        working-directory: typespec/packages/http-client-java/generator/http-client-generator-test
+        run: mvn -B -ntp test
+
+      - name: Stop Spector server
+        if: always()
+        working-directory: typespec/packages/http-client-java/generator/http-client-generator-test
+        continue-on-error: true
+        run: npm run spector-stop
+
+      # ---------------------------------------------------------------------
+      # 11) Stage only allowed changes.
+      # ---------------------------------------------------------------------
+      - name: Revert local-tarball package.json change
+        shell: pwsh
+        run: |
+          & "${{ github.workspace }}/typespec/eng/scripts/Patch-AzureHttpSpecsDependency.ps1" `
+            -PackageJson "${{ github.workspace }}/typespec/packages/http-client-java/generator/http-client-generator-test/package.json" `
+            -Revert
+
+      - name: npm format http-client-java
+        working-directory: typespec/packages/http-client-java
+        run: npm run format
+
+      - name: Add chronus changelog entry
+        working-directory: typespec
+        shell: bash
+        run: |
+          set -euo pipefail
+          MSG="Add Java e2e test for ARM Spector scenarios (${{ steps.resolve.outputs.azure_repo }}#${{ steps.resolve.outputs.azure_pr }})"
+          pnpm change add @typespec/http-client-java --kind=internal --message="$MSG"
+
+      - name: Configure git identity
+        working-directory: typespec
+        run: |
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config user.name  "github-actions[bot]"
+
+      - name: Commit allowed changes
+        working-directory: typespec
+        id: commit
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Only stage paths we are allowed to touch. The .bak file is excluded
+          # because git won't see it (it was removed by -Revert), but we add a
+          # defensive pathspec exclusion just in case.
+          git add \
+            "packages/http-client-java/generator/http-client-generator-test/src/test/java" \
+            "packages/http-client-java/generator/http-client-generator-test/src/main/java" \
+            ".chronus" \
+            ":(exclude)packages/http-client-java/generator/http-client-generator-test/**/*.bak" || true
+
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+            echo "has_changes=false" >> "$GITHUB_OUTPUT"
+          else
+            git commit -m "Add Java e2e test for ARM Spector scenarios (${{ steps.resolve.outputs.azure_repo }}#${{ steps.resolve.outputs.azure_pr }})
+
+          Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>"
+            echo "has_changes=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      # ---------------------------------------------------------------------
+      # 12) Publish results.
+      # ---------------------------------------------------------------------
+      - name: Push to existing typespec PR branch
+        if: steps.commit.outputs.has_changes == 'true' && steps.resolve.outputs.typespec_pr != ''
+        working-directory: typespec
+        shell: bash
+        run: |
+          set -euo pipefail
+          # `gh pr checkout` set up a branch tracking the PR head; push to it.
+          git push
+
+      - name: Comment on typespec PR
+        if: steps.commit.outputs.has_changes == 'true' && steps.resolve.outputs.typespec_pr != ''
+        env:
+          GH_TOKEN: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          gh pr comment "${{ steps.resolve.outputs.typespec_pr }}" \
+            --repo "${{ github.repository }}" \
+            --body "Pushed generated Java e2e tests for ${{ steps.resolve.outputs.azure_repo }}#${{ steps.resolve.outputs.azure_pr }} (run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})."
+
+      - name: Push new branch and open PR
+        if: steps.commit.outputs.has_changes == 'true' && steps.resolve.outputs.typespec_pr == ''
+        working-directory: typespec
+        env:
+          GH_TOKEN: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          git push --set-upstream origin "$WORK_BRANCH"
+          BODY="Auto-generated by [Generate Java e2e test for ARM Spector](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}).
+
+          Linked to ${{ steps.resolve.outputs.azure_repo }}#${{ steps.resolve.outputs.azure_pr }}."
+          gh pr create \
+            --repo "${{ github.repository }}" \
+            --base main \
+            --head "$WORK_BRANCH" \
+            --title "Java e2e test for ARM Spector (${{ steps.resolve.outputs.azure_repo }}#${{ steps.resolve.outputs.azure_pr }})" \
+            --body "$BODY"
+
+      # ---------------------------------------------------------------------
+      # 13) Failure artifacts.
+      # ---------------------------------------------------------------------
+      - name: Upload failure artifacts
+        if: failure()
+        uses: actions/upload-artifact@v5
+        with:
+          name: generate-java-e2e-debug-${{ github.run_id }}
+          path: |
+            typespec/packages/http-client-java/generator/http-client-generator-test/target/surefire-reports/**
+            typespec/packages/http-client-java/generator/http-client-generator-test/tsp-spector-coverage-*.json
+            ${{ runner.temp }}/copilot-output.log
+            ${{ runner.temp }}/agent-prompt.md
+          if-no-files-found: ignore
