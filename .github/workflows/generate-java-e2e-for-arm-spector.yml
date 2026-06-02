@@ -423,7 +423,7 @@ jobs:
             # Scope mvn test to ONLY the new/modified test classes the agent
             # wrote this run. Running the whole test suite produces many
             # unrelated module-path failures that are not in scope.
-            NEW_TESTS=$(cd typespec && git status --porcelain -- "$TESTDIR/src/test/java/" \
+            NEW_TESTS=$(git status --porcelain -- "$TESTDIR/src/test/java/" \
               | awk '{print $NF}' \
               | grep -E '\.java$' \
               | sed -E "s|^$TESTDIR/src/test/java/||; s|\.java$||; s|/|.|g" \
