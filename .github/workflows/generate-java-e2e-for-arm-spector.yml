@@ -185,6 +185,30 @@ jobs:
           echo "Azure PR head: $(git rev-parse --abbrev-ref HEAD) @ $(git rev-parse --short HEAD)"
 
       # ---------------------------------------------------------------------
+      # 3a) Build typespec-azure's azure-http-specs so that the PR's
+      #     mockapi.ts files exist as compiled mockapi.js under
+      #     packages/azure-http-specs/dist/specs/. Spector serves mocks from
+      #     ../dist/**/*.js relative to the scenarios path (see
+      #     @typespec/spector scenarios-resolver.ts), NOT from the .ts
+      #     sources. Without this build, `npm run spector-start` later in
+      #     this workflow would (a) serve no routes at all for ARM
+      #     scenarios newly added by the PR, and (b) serve stale mocks
+      #     from the pinned alpha tarball for modified scenarios.
+      #
+      #     We invoke `tsc -p ./tsconfig.build.json` directly instead of
+      #     `pnpm --filter @azure-tools/azure-http-specs build` because the
+      #     latter chains `pnpm validate-scenarios`, which may abort on
+      #     intentional new features in the PR.
+      # ---------------------------------------------------------------------
+      - name: Build azure-http-specs in typespec-azure (compile mockapi.ts)
+        working-directory: typespec-azure
+        shell: bash
+        run: |
+          set -euo pipefail
+          pnpm install --frozen-lockfile=false
+          pnpm --filter @azure-tools/azure-http-specs exec tsc -p ./tsconfig.build.json
+
+      # ---------------------------------------------------------------------
       # 4) Detect changed ARM scenarios in the Azure PR (must run before we
       #    rewrite anything so the diff is clean).
       # ---------------------------------------------------------------------
@@ -247,8 +271,11 @@ jobs:
         run: |
           $ErrorActionPreference = "Stop"
           $tsazSpecRoot = "${{ github.workspace }}/typespec-azure/packages/azure-http-specs/specs"
+          $tsazDistRoot = "${{ github.workspace }}/typespec-azure/packages/azure-http-specs/dist/specs"
           $nmSpecRoot   = "${{ github.workspace }}/typespec/packages/http-client-java/generator/http-client-generator-test/node_modules/@azure-tools/azure-http-specs/specs"
+          $nmDistRoot   = "${{ github.workspace }}/typespec/packages/http-client-java/generator/http-client-generator-test/node_modules/@azure-tools/azure-http-specs/dist/specs"
           if (-not (Test-Path $nmSpecRoot)) { throw "node_modules azure-http-specs/specs not found at $nmSpecRoot" }
+          if (-not (Test-Path $nmDistRoot)) { throw "node_modules azure-http-specs/dist/specs not found at $nmDistRoot" }
           $scenarios = $env:SCENARIOS_JSON | ConvertFrom-Json
           if ($scenarios -isnot [System.Array]) { $scenarios = @($scenarios) }
           $mainTspList = @()
@@ -265,9 +292,25 @@ jobs:
             New-Item -ItemType Directory -Force -Path (Split-Path $dst -Parent) | Out-Null
             if (Test-Path $dst) { Remove-Item -Recurse -Force $dst }
             Copy-Item -Recurse -Force $src $dst
-            Write-Host "Overlaid $src -> $dst"
+            Write-Host "Overlaid specs $src -> $dst"
             $mainTsp = Join-Path $dst "main.tsp"
             if (Test-Path $mainTsp) { $mainTspList += $mainTsp }
+
+            # Also overlay the compiled mockapi.js (and any sibling .js) into
+            # node_modules dist/ so that `npm run spector-start` serves the
+            # PR's mocks, not the pinned alpha tarball's. The build step
+            # earlier in this workflow (`pnpm exec tsc -p tsconfig.build.json`
+            # in typespec-azure) populated $tsazDistRoot.
+            $srcJs = Join-Path $tsazDistRoot $rel
+            $dstJs = Join-Path $nmDistRoot   $rel
+            if (-not (Test-Path $srcJs)) {
+              Write-Host "::warning::No compiled dist for scenario '$rel' at $srcJs; spector will serve no routes for it. Did the azure-http-specs build skip this folder?"
+            } else {
+              New-Item -ItemType Directory -Force -Path (Split-Path $dstJs -Parent) | Out-Null
+              if (Test-Path $dstJs) { Remove-Item -Recurse -Force $dstJs }
+              Copy-Item -Recurse -Force $srcJs $dstJs
+              Write-Host "Overlaid compiled mocks $srcJs -> $dstJs"
+            }
           }
           if ($mainTspList.Count -eq 0) { throw "No main.tsp files found in overlaid scenarios" }
           "main_tsps<<EOF" >> $env:GITHUB_OUTPUT
@@ -309,14 +352,31 @@ jobs:
             throw "tsp compile failed for: $($failed -join ', ')"
           }
           # Merge each tsp-output/<id>/src into the test project's src/.
+          # NOTE: We exclude module-info.java and ReadmeSamples.java to match
+          # the manual regen path (Generate.ps1). The emitter produces a
+          # per-scenario module-info.java at src/main/java/module-info.java
+          # that, if merged, breaks `mvn test-compile` because it doesn't
+          # declare the modules of the other scenarios already in ./src.
+          # PowerShell's `Copy-Item -Recurse -Exclude` only filters items
+          # matched directly by -Path, so it does NOT reliably exclude these
+          # nested files. The -Exclude below mirrors Generate.ps1 for parity;
+          # the Get-ChildItem | Remove-Item pass after the loop is what
+          # actually guarantees the cleanup.
           Get-ChildItem -Path ./tsp-output -Directory | ForEach-Object {
             $srcSub = Join-Path $_.FullName "src"
             if (Test-Path $srcSub) {
               Write-Host "Merging $srcSub -> ./src"
               if (-not (Test-Path ./src)) { New-Item -ItemType Directory -Path ./src | Out-Null }
-              Copy-Item -Path "$srcSub/*" -Destination ./src -Recurse -Force
+              Copy-Item -Path "$srcSub/*" -Destination ./src -Recurse -Force `
+                -Exclude @("ReadmeSamples.java", "module-info.java")
             }
           }
+          Get-ChildItem -Path ./src -Recurse -File `
+            -Include 'module-info.java','ReadmeSamples.java' `
+            -ErrorAction SilentlyContinue | ForEach-Object {
+              Write-Host "Removing leaked generated file: $($_.FullName)"
+              Remove-Item -Force $_.FullName
+            }
           Remove-Item -Recurse -Force ./tsp-output
 
       # ---------------------------------------------------------------------
