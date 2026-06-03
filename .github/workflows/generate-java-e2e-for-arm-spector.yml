@@ -490,9 +490,14 @@ jobs:
             # Scope mvn test to ONLY the new/modified test classes the agent
             # wrote this run. Running the whole test suite produces many
             # unrelated module-path failures that are not in scope.
-            NEW_TESTS=$(git status --porcelain -- "$TESTDIR/src/test/java/" \
+            # Use --untracked-files=all so a new .java file inside a brand-new
+            # untracked directory is listed individually (otherwise git only
+            # reports the directory itself, which doesn't match \.java$). Wrap
+            # grep in `|| true` so an empty match doesn't trip pipefail+set -e
+            # and silently kill the script before mvn test even runs.
+            NEW_TESTS=$(git status --porcelain --untracked-files=all -- "$TESTDIR/src/test/java/" \
               | awk '{print $NF}' \
-              | grep -E '\.java$' \
+              | { grep -E '\.java$' || true; } \
               | sed -E "s|^$TESTDIR/src/test/java/||; s|\.java$||; s|/|.|g" \
               | paste -sd, -)
             if [[ -z "$NEW_TESTS" ]]; then
