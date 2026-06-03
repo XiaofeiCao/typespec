@@ -548,9 +548,13 @@ jobs:
       # ---------------------------------------------------------------------
       # 11) Stage only allowed changes.
       # ---------------------------------------------------------------------
-      - name: npm format http-client-java
+      - name: Format http-client-java Java sources
         working-directory: typespec/packages/http-client-java
-        run: npm run format
+        # The agent only authors Java test files, so only Java formatting
+        # (mvn spotless:apply) needs to run. We skip `npm run format`
+        # because it also runs prettier, which depends on a built
+        # `prettier-plugin-typespec/dist/` that this workflow doesn't build.
+        run: mvn spotless:apply --no-transfer-progress -T 1C --activate-profiles test -f ./generator/pom.xml
 
       - name: Add chronus changelog entry
         working-directory: typespec
