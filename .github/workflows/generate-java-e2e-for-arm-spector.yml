@@ -206,6 +206,13 @@ jobs:
         run: |
           set -euo pipefail
           pnpm install --frozen-lockfile=false
+          # Build workspace dependencies of azure-http-specs (notably
+          # @typespec/spec-api from the core/ submodule) so their dist/*.d.ts
+          # files exist and tsc can resolve them from mockapi.ts. We use the
+          # `^...` filter to build dependencies only, NOT the package itself,
+          # because building @azure-tools/azure-http-specs chains
+          # `validate-scenarios` which can abort on intentional PR features.
+          pnpm --filter "@azure-tools/azure-http-specs^..." build
           pnpm --filter @azure-tools/azure-http-specs exec tsc -p ./tsconfig.build.json
 
       # ---------------------------------------------------------------------
