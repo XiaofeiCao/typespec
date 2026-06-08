@@ -5,6 +5,7 @@
 package azure.resourcemanager.commonproperties.models;
 
 import azure.resourcemanager.commonproperties.fluent.models.ManagedIdentityTrackedResourceInner;
+import azure.resourcemanager.commontypes.models.ManagedServiceIdentity;
 import com.azure.core.management.Region;
 import com.azure.core.management.SystemData;
 import com.azure.core.util.Context;

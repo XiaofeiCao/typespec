@@ -4,8 +4,7 @@
 
 package azure.resourcemanager.commonproperties.fluent.models;
 
-import azure.resourcemanager.commonproperties.models.ManagedIdentityTrackedResourceProperties;
-import azure.resourcemanager.commontypes.models.ManagedServiceIdentity;
+import azure.resourcemanager.commonproperties.models.ArmResourceIdentifierResourceProperties;
 import com.azure.core.annotation.Fluent;
 import com.azure.core.management.Resource;
 import com.azure.core.management.SystemData;
@@ -19,16 +18,11 @@ import java.util.Map;
  * Concrete tracked resource types can be created by aliasing this type using a specific property type.
  */
 @Fluent
-public final class ManagedIdentityTrackedResourceInner extends Resource {
+public final class ArmResourceIdentifierResourceInner extends Resource {
     /*
      * The resource-specific properties for this resource.
      */
-    private ManagedIdentityTrackedResourceProperties properties;
-
-    /*
-     * The managed service identities assigned to this resource.
-     */
-    private ManagedServiceIdentity identity;
+    private ArmResourceIdentifierResourceProperties properties;
 
     /*
      * Azure Resource Manager metadata containing createdBy and modifiedBy information.
@@ -51,9 +45,9 @@ public final class ManagedIdentityTrackedResourceInner extends Resource {
     private String id;
 
     /**
-     * Creates an instance of ManagedIdentityTrackedResourceInner class.
+     * Creates an instance of ArmResourceIdentifierResourceInner class.
      */
-    public ManagedIdentityTrackedResourceInner() {
+    public ArmResourceIdentifierResourceInner() {
     }
 
     /**
@@ -61,7 +55,7 @@ public final class ManagedIdentityTrackedResourceInner extends Resource {
      * 
      * @return the properties value.
      */
-    public ManagedIdentityTrackedResourceProperties properties() {
+    public ArmResourceIdentifierResourceProperties properties() {
         return this.properties;
     }
 
@@ -69,30 +63,10 @@ public final class ManagedIdentityTrackedResourceInner extends Resource {
      * Set the properties property: The resource-specific properties for this resource.
      * 
      * @param properties the properties value to set.
-     * @return the ManagedIdentityTrackedResourceInner object itself.
+     * @return the ArmResourceIdentifierResourceInner object itself.
      */
-    public ManagedIdentityTrackedResourceInner withProperties(ManagedIdentityTrackedResourceProperties properties) {
+    public ArmResourceIdentifierResourceInner withProperties(ArmResourceIdentifierResourceProperties properties) {
         this.properties = properties;
-        return this;
-    }
-
-    /**
-     * Get the identity property: The managed service identities assigned to this resource.
-     * 
-     * @return the identity value.
-     */
-    public ManagedServiceIdentity identity() {
-        return this.identity;
-    }
-
-    /**
-     * Set the identity property: The managed service identities assigned to this resource.
-     * 
-     * @param identity the identity value to set.
-     * @return the ManagedIdentityTrackedResourceInner object itself.
-     */
-    public ManagedIdentityTrackedResourceInner withIdentity(ManagedServiceIdentity identity) {
-        this.identity = identity;
         return this;
     }
 
@@ -139,7 +113,7 @@ public final class ManagedIdentityTrackedResourceInner extends Resource {
      * {@inheritDoc}
      */
     @Override
-    public ManagedIdentityTrackedResourceInner withLocation(String location) {
+    public ArmResourceIdentifierResourceInner withLocation(String location) {
         super.withLocation(location);
         return this;
     }
@@ -148,7 +122,7 @@ public final class ManagedIdentityTrackedResourceInner extends Resource {
      * {@inheritDoc}
      */
     @Override
-    public ManagedIdentityTrackedResourceInner withTags(Map<String, String> tags) {
+    public ArmResourceIdentifierResourceInner withTags(Map<String, String> tags) {
         super.withTags(tags);
         return this;
     }
@@ -162,51 +136,48 @@ public final class ManagedIdentityTrackedResourceInner extends Resource {
         jsonWriter.writeStringField("location", location());
         jsonWriter.writeMapField("tags", tags(), (writer, element) -> writer.writeString(element));
         jsonWriter.writeJsonField("properties", this.properties);
-        jsonWriter.writeJsonField("identity", this.identity);
         return jsonWriter.writeEndObject();
     }
 
     /**
-     * Reads an instance of ManagedIdentityTrackedResourceInner from the JsonReader.
+     * Reads an instance of ArmResourceIdentifierResourceInner from the JsonReader.
      * 
      * @param jsonReader The JsonReader being read.
-     * @return An instance of ManagedIdentityTrackedResourceInner if the JsonReader was pointing to an instance of it,
-     * or null if it was pointing to JSON null.
+     * @return An instance of ArmResourceIdentifierResourceInner if the JsonReader was pointing to an instance of it, or
+     * null if it was pointing to JSON null.
      * @throws IllegalStateException If the deserialized JSON object was missing any required properties.
-     * @throws IOException If an error occurs while reading the ManagedIdentityTrackedResourceInner.
+     * @throws IOException If an error occurs while reading the ArmResourceIdentifierResourceInner.
      */
-    public static ManagedIdentityTrackedResourceInner fromJson(JsonReader jsonReader) throws IOException {
+    public static ArmResourceIdentifierResourceInner fromJson(JsonReader jsonReader) throws IOException {
         return jsonReader.readObject(reader -> {
-            ManagedIdentityTrackedResourceInner deserializedManagedIdentityTrackedResourceInner
-                = new ManagedIdentityTrackedResourceInner();
+            ArmResourceIdentifierResourceInner deserializedArmResourceIdentifierResourceInner
+                = new ArmResourceIdentifierResourceInner();
             while (reader.nextToken() != JsonToken.END_OBJECT) {
                 String fieldName = reader.getFieldName();
                 reader.nextToken();
 
                 if ("id".equals(fieldName)) {
-                    deserializedManagedIdentityTrackedResourceInner.id = reader.getString();
+                    deserializedArmResourceIdentifierResourceInner.id = reader.getString();
                 } else if ("name".equals(fieldName)) {
-                    deserializedManagedIdentityTrackedResourceInner.name = reader.getString();
+                    deserializedArmResourceIdentifierResourceInner.name = reader.getString();
                 } else if ("type".equals(fieldName)) {
-                    deserializedManagedIdentityTrackedResourceInner.type = reader.getString();
+                    deserializedArmResourceIdentifierResourceInner.type = reader.getString();
                 } else if ("location".equals(fieldName)) {
-                    deserializedManagedIdentityTrackedResourceInner.withLocation(reader.getString());
+                    deserializedArmResourceIdentifierResourceInner.withLocation(reader.getString());
                 } else if ("tags".equals(fieldName)) {
                     Map<String, String> tags = reader.readMap(reader1 -> reader1.getString());
-                    deserializedManagedIdentityTrackedResourceInner.withTags(tags);
+                    deserializedArmResourceIdentifierResourceInner.withTags(tags);
                 } else if ("properties".equals(fieldName)) {
-                    deserializedManagedIdentityTrackedResourceInner.properties
-                        = ManagedIdentityTrackedResourceProperties.fromJson(reader);
-                } else if ("identity".equals(fieldName)) {
-                    deserializedManagedIdentityTrackedResourceInner.identity = ManagedServiceIdentity.fromJson(reader);
+                    deserializedArmResourceIdentifierResourceInner.properties
+                        = ArmResourceIdentifierResourceProperties.fromJson(reader);
                 } else if ("systemData".equals(fieldName)) {
-                    deserializedManagedIdentityTrackedResourceInner.systemData = SystemData.fromJson(reader);
+                    deserializedArmResourceIdentifierResourceInner.systemData = SystemData.fromJson(reader);
                 } else {
                     reader.skipChildren();
                 }
             }
 
-            return deserializedManagedIdentityTrackedResourceInner;
+            return deserializedArmResourceIdentifierResourceInner;
         });
     }
 }
