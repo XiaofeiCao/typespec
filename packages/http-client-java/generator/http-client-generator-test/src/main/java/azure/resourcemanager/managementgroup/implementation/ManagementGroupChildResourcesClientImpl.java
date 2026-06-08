@@ -73,7 +73,7 @@ public final class ManagementGroupChildResourcesClientImpl implements Management
     @ServiceInterface(name = "ManagementGroupClientManagementGroupChildResources")
     public interface ManagementGroupChildResourcesService {
         @Headers({ "Content-Type: application/json" })
-        @Get("/providers/Microsoft.Management/managementGroups/{managementGroupId}/providers/Azure.ResourceManager.ManagementGroup/managementGroupChildResources/{managementGroupChildResourceName}")
+        @Get("/providers/Microsoft.Management/managementGroups/{managementGroupId}/providers/Microsoft.ManagementGroupChild/managementGroupChildResources/{managementGroupChildResourceName}")
         @ExpectedResponses({ 200 })
         @UnexpectedResponseExceptionType(ManagementException.class)
         Mono<Response<ManagementGroupChildResourceInner>> get(@HostParam("endpoint") String endpoint,
@@ -82,7 +82,7 @@ public final class ManagementGroupChildResourcesClientImpl implements Management
             @HeaderParam("Accept") String accept, Context context);
 
         @Headers({ "Content-Type: application/json" })
-        @Get("/providers/Microsoft.Management/managementGroups/{managementGroupId}/providers/Azure.ResourceManager.ManagementGroup/managementGroupChildResources/{managementGroupChildResourceName}")
+        @Get("/providers/Microsoft.Management/managementGroups/{managementGroupId}/providers/Microsoft.ManagementGroupChild/managementGroupChildResources/{managementGroupChildResourceName}")
         @ExpectedResponses({ 200 })
         @UnexpectedResponseExceptionType(ManagementException.class)
         Response<ManagementGroupChildResourceInner> getSync(@HostParam("endpoint") String endpoint,
@@ -90,7 +90,7 @@ public final class ManagementGroupChildResourcesClientImpl implements Management
             @PathParam("managementGroupChildResourceName") String managementGroupChildResourceName,
             @HeaderParam("Accept") String accept, Context context);
 
-        @Put("/providers/Microsoft.Management/managementGroups/{managementGroupId}/providers/Azure.ResourceManager.ManagementGroup/managementGroupChildResources/{managementGroupChildResourceName}")
+        @Put("/providers/Microsoft.Management/managementGroups/{managementGroupId}/providers/Microsoft.ManagementGroupChild/managementGroupChildResources/{managementGroupChildResourceName}")
         @ExpectedResponses({ 200, 201 })
         @UnexpectedResponseExceptionType(ManagementException.class)
         Mono<Response<Flux<ByteBuffer>>> createOrUpdate(@HostParam("endpoint") String endpoint,
@@ -99,7 +99,7 @@ public final class ManagementGroupChildResourcesClientImpl implements Management
             @HeaderParam("Content-Type") String contentType, @HeaderParam("Accept") String accept,
             @BodyParam("application/json") ManagementGroupChildResourceInner resource, Context context);
 
-        @Put("/providers/Microsoft.Management/managementGroups/{managementGroupId}/providers/Azure.ResourceManager.ManagementGroup/managementGroupChildResources/{managementGroupChildResourceName}")
+        @Put("/providers/Microsoft.Management/managementGroups/{managementGroupId}/providers/Microsoft.ManagementGroupChild/managementGroupChildResources/{managementGroupChildResourceName}")
         @ExpectedResponses({ 200, 201 })
         @UnexpectedResponseExceptionType(ManagementException.class)
         Response<BinaryData> createOrUpdateSync(@HostParam("endpoint") String endpoint,
@@ -108,7 +108,7 @@ public final class ManagementGroupChildResourcesClientImpl implements Management
             @HeaderParam("Content-Type") String contentType, @HeaderParam("Accept") String accept,
             @BodyParam("application/json") ManagementGroupChildResourceInner resource, Context context);
 
-        @Patch("/providers/Microsoft.Management/managementGroups/{managementGroupId}/providers/Azure.ResourceManager.ManagementGroup/managementGroupChildResources/{managementGroupChildResourceName}")
+        @Patch("/providers/Microsoft.Management/managementGroups/{managementGroupId}/providers/Microsoft.ManagementGroupChild/managementGroupChildResources/{managementGroupChildResourceName}")
         @ExpectedResponses({ 200 })
         @UnexpectedResponseExceptionType(ManagementException.class)
         Mono<Response<ManagementGroupChildResourceInner>> update(@HostParam("endpoint") String endpoint,
@@ -117,7 +117,7 @@ public final class ManagementGroupChildResourcesClientImpl implements Management
             @HeaderParam("Content-Type") String contentType, @HeaderParam("Accept") String accept,
             @BodyParam("application/json") ManagementGroupChildResourceInner properties, Context context);
 
-        @Patch("/providers/Microsoft.Management/managementGroups/{managementGroupId}/providers/Azure.ResourceManager.ManagementGroup/managementGroupChildResources/{managementGroupChildResourceName}")
+        @Patch("/providers/Microsoft.Management/managementGroups/{managementGroupId}/providers/Microsoft.ManagementGroupChild/managementGroupChildResources/{managementGroupChildResourceName}")
         @ExpectedResponses({ 200 })
         @UnexpectedResponseExceptionType(ManagementException.class)
         Response<ManagementGroupChildResourceInner> updateSync(@HostParam("endpoint") String endpoint,
@@ -127,7 +127,7 @@ public final class ManagementGroupChildResourcesClientImpl implements Management
             @BodyParam("application/json") ManagementGroupChildResourceInner properties, Context context);
 
         @Headers({ "Accept: application/json;q=0.9", "Content-Type: application/json" })
-        @Delete("/providers/Microsoft.Management/managementGroups/{managementGroupId}/providers/Azure.ResourceManager.ManagementGroup/managementGroupChildResources/{managementGroupChildResourceName}")
+        @Delete("/providers/Microsoft.Management/managementGroups/{managementGroupId}/providers/Microsoft.ManagementGroupChild/managementGroupChildResources/{managementGroupChildResourceName}")
         @ExpectedResponses({ 200, 204 })
         @UnexpectedResponseExceptionType(ManagementException.class)
         Mono<Response<Void>> delete(@HostParam("endpoint") String endpoint,
@@ -135,7 +135,7 @@ public final class ManagementGroupChildResourcesClientImpl implements Management
             @PathParam("managementGroupChildResourceName") String managementGroupChildResourceName, Context context);
 
         @Headers({ "Accept: application/json;q=0.9", "Content-Type: application/json" })
-        @Delete("/providers/Microsoft.Management/managementGroups/{managementGroupId}/providers/Azure.ResourceManager.ManagementGroup/managementGroupChildResources/{managementGroupChildResourceName}")
+        @Delete("/providers/Microsoft.Management/managementGroups/{managementGroupId}/providers/Microsoft.ManagementGroupChild/managementGroupChildResources/{managementGroupChildResourceName}")
         @ExpectedResponses({ 200, 204 })
         @UnexpectedResponseExceptionType(ManagementException.class)
         Response<Void> deleteSync(@HostParam("endpoint") String endpoint, @QueryParam("api-version") String apiVersion,
@@ -143,7 +143,7 @@ public final class ManagementGroupChildResourcesClientImpl implements Management
             @PathParam("managementGroupChildResourceName") String managementGroupChildResourceName, Context context);
 
         @Headers({ "Content-Type: application/json" })
-        @Get("/providers/Microsoft.Management/managementGroups/{managementGroupId}/providers/Azure.ResourceManager.ManagementGroup/managementGroupChildResources")
+        @Get("/providers/Microsoft.Management/managementGroups/{managementGroupId}/providers/Microsoft.ManagementGroupChild/managementGroupChildResources")
         @ExpectedResponses({ 200 })
         @UnexpectedResponseExceptionType(ManagementException.class)
         Mono<Response<ManagementGroupChildResourceListResult>> listByManagementGroup(
@@ -152,7 +152,7 @@ public final class ManagementGroupChildResourcesClientImpl implements Management
             Context context);
 
         @Headers({ "Content-Type: application/json" })
-        @Get("/providers/Microsoft.Management/managementGroups/{managementGroupId}/providers/Azure.ResourceManager.ManagementGroup/managementGroupChildResources")
+        @Get("/providers/Microsoft.Management/managementGroups/{managementGroupId}/providers/Microsoft.ManagementGroupChild/managementGroupChildResources")
         @ExpectedResponses({ 200 })
         @UnexpectedResponseExceptionType(ManagementException.class)
         Response<ManagementGroupChildResourceListResult> listByManagementGroupSync(

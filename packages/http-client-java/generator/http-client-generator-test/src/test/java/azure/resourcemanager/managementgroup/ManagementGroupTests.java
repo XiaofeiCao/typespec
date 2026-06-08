@@ -18,8 +18,8 @@ public class ManagementGroupTests {
     private static final String MANAGEMENT_GROUP_ID = "test-mg";
     private static final String RESOURCE_NAME = "resource";
     private static final String RESOURCE_ID
-        = "/providers/Microsoft.Management/managementGroups/test-mg/providers/Azure.ResourceManager.ManagementGroup/managementGroupChildResources/resource";
-    private static final String RESOURCE_TYPE = "Azure.ResourceManager.ManagementGroup/managementGroupChildResources";
+        = "/providers/Microsoft.Management/managementGroups/test-mg/providers/Microsoft.ManagementGroupChild/managementGroupChildResources/resource";
+    private static final String RESOURCE_TYPE = "Microsoft.ManagementGroupChild/managementGroupChildResources";
     private static final String DESCRIPTION_VALID = "valid";
     private static final String DESCRIPTION_VALID2 = "valid2";
 
